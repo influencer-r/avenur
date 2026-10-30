@@ -479,6 +479,26 @@ const HERO_SLIDES = [
 ];
 
 // ==========================================
+// 2.5 SUPABASE CLOUD BACKEND CONFIGURATION
+// ==========================================
+const SUPABASE_CONFIG = {
+  url: "https://zwqxjojnbhpybqurmtkt.supabase.co",
+  publishableKey: "sb_publishable_NGqm4M_-hiEgoTgrtg9OgQ_yssoGsr5"
+};
+
+let supabaseClient = null;
+function getSupabaseClient() {
+  if (!supabaseClient && typeof window !== 'undefined' && window.supabase && window.supabase.createClient) {
+    try {
+      supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.publishableKey);
+    } catch (e) {
+      console.warn("Supabase init error:", e);
+    }
+  }
+  return supabaseClient;
+}
+
+// ==========================================
 // 3. APPLICATION STATE STORE
 // ==========================================
 class AppStore {
@@ -489,7 +509,12 @@ class AppStore {
     this.viewMode = 'grid'; // 'grid' | 'list'
     this.savedIds = new Set(['avenur-westlands-2br', 'avenur-nyali-ocean']);
     this.contactedIds = new Set(['avenur-westlands-2br']);
-    this.currentUser = { name: "Sarah K.", role: "tenant", phone: "+254 712 345 678" };
+    let savedUser = null;
+    try {
+      const su = localStorage.getItem('avenur_current_user');
+      if (su) savedUser = JSON.parse(su);
+    } catch (e) {}
+    this.currentUser = savedUser || { name: "Sarah K.", role: "tenant", phone: "+254 712 345 678", isApproved: false };
     this.slideIndex = 0;
     this.isSlideshowPlaying = true;
     this.slideTimer = null;
@@ -1176,6 +1201,68 @@ function initAccordions() {
 // 11. LANDLORD PORTAL / DASHBOARD TABLE
 // ==========================================
 function renderLandlordTable() {
+  const banner = document.getElementById('landlord-auth-banner');
+  const addBtn = document.getElementById('btn-landlord-add-listing');
+
+  if (banner) {
+    if (!store.currentUser || store.currentUser.role === 'tenant') {
+      banner.innerHTML = `
+        <div style="background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <div style="color:#D97706; font-size:1.35rem;">🔒</div>
+            <div>
+              <strong style="color:#92400E; display:block; font-size:0.9375rem;">Guest / Tenant Mode Active</strong>
+              <span style="color:#B45309; font-size:0.8125rem;">You must sign in as an approved landlord or admin to post and manage properties.</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-sm" style="background:#D97706; color:#FFF; font-weight:700;" onclick="openAuthModal(); switchAuthTab('landlord');">Sign in as Landlord</button>
+            <button class="btn btn-outline btn-sm" onclick="handleDemoLogin('landlord')">Quick Demo Landlord</button>
+          </div>
+        </div>
+      `;
+      if (addBtn) addBtn.style.opacity = '0.7';
+    } else if (store.currentUser.role === 'landlord' && !store.currentUser.isApproved) {
+      banner.innerHTML = `
+        <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+              <div style="color:#D97706; font-size:1.35rem;">⏳</div>
+              <div>
+                <strong style="color:#92400E; display:block; font-size:0.9375rem;">Landlord Account Pending Verification: ${store.currentUser.name || store.currentUser.email}</strong>
+                <span style="color:#B45309; font-size:0.8125rem; display:block; margin-top:0.25rem;">
+                  Under Avenur's Zero-Ghost Listing Policy, our inspection team physically confirms landlord title or agency rights before live property publishing is unlocked.
+                </span>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <a href="https://wa.me/${store.businessWhatsapp}?text=${encodeURIComponent(`Hi Avenur Admin, I have registered as a landlord (${store.currentUser.email || store.currentUser.name}). Please review and approve my account for listing.`)}" target="_blank" class="btn btn-sm" style="background:#10B981; color:#FFF; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:0.35rem;">
+                <span>WhatsApp Admin to Verify</span>
+              </a>
+              <button class="btn btn-outline btn-sm" onclick="handleSignOut()">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      `;
+      if (addBtn) addBtn.style.opacity = '0.7';
+    } else {
+      // Approved landlord or admin
+      banner.innerHTML = `
+        <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:0.85rem 1.25rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <div style="color:#059669; font-size:1.2rem;">✅</div>
+            <div>
+              <strong style="color:#065F46; font-size:0.9375rem;">Approved Landlord: ${store.currentUser.name || store.currentUser.email}</strong>
+              <span style="color:#047857; font-size:0.8125rem; margin-left:0.5rem;">· Verified Live Publisher (${store.currentUser.isDemo ? 'Prototype Demo' : 'Supabase Cloud'})</span>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="handleSignOut()">Sign Out</button>
+        </div>
+      `;
+      if (addBtn) addBtn.style.opacity = '1';
+    }
+  }
+
   const tbody = document.getElementById('landlord-properties-tbody');
   if (!tbody) return;
 
@@ -1344,6 +1431,296 @@ function openPhotoAuditModal() {
 function openAddListingModal() {
   const modal = document.getElementById('modal-add-listing');
   if (modal) modal.classList.add('active');
+}
+
+let landlordAuthMode = 'signin';
+
+function switchAuthTab(tab) {
+  const tenantTab = document.getElementById('tab-auth-tenant');
+  const landlordTab = document.getElementById('tab-auth-landlord');
+  const tenantPanel = document.getElementById('auth-panel-tenant');
+  const landlordPanel = document.getElementById('auth-panel-landlord');
+  const title = document.getElementById('auth-modal-title');
+
+  if (tab === 'tenant') {
+    if (tenantTab) {
+      tenantTab.classList.add('active');
+      tenantTab.style.color = '#4F46E5';
+      tenantTab.style.borderBottom = '2px solid #4F46E5';
+    }
+    if (landlordTab) {
+      landlordTab.classList.remove('active');
+      landlordTab.style.color = '#64748B';
+      landlordTab.style.borderBottom = 'none';
+    }
+    if (tenantPanel) tenantPanel.style.display = 'block';
+    if (landlordPanel) landlordPanel.style.display = 'none';
+    if (title) title.textContent = 'Sign in to Avenur';
+  } else {
+    if (landlordTab) {
+      landlordTab.classList.add('active');
+      landlordTab.style.color = '#4F46E5';
+      landlordTab.style.borderBottom = '2px solid #4F46E5';
+    }
+    if (tenantTab) {
+      tenantTab.classList.remove('active');
+      tenantTab.style.color = '#64748B';
+      tenantTab.style.borderBottom = 'none';
+    }
+    if (tenantPanel) tenantPanel.style.display = 'none';
+    if (landlordPanel) landlordPanel.style.display = 'block';
+    if (title) title.textContent = landlordAuthMode === 'signin' ? 'Landlord Sign In' : 'Landlord Registration';
+  }
+}
+
+function toggleLandlordAuthMode() {
+  landlordAuthMode = landlordAuthMode === 'signin' ? 'signup' : 'signin';
+  const label = document.getElementById('landlord-mode-label');
+  const toggle = document.getElementById('landlord-mode-toggle');
+  const signupFields = document.getElementById('landlord-signup-fields');
+  const submitBtn = document.getElementById('btn-landlord-auth-submit');
+  const title = document.getElementById('auth-modal-title');
+
+  if (landlordAuthMode === 'signup') {
+    if (label) label.textContent = 'Register New Landlord Account';
+    if (toggle) toggle.textContent = 'Already have an account? Sign In';
+    if (signupFields) signupFields.style.display = 'block';
+    if (submitBtn) submitBtn.textContent = 'Submit Registration for Approval';
+    if (title) title.textContent = 'Landlord Registration';
+  } else {
+    if (label) label.textContent = 'Sign in to manage properties';
+    if (toggle) toggle.textContent = 'Need an account? Register';
+    if (signupFields) signupFields.style.display = 'none';
+    if (submitBtn) submitBtn.textContent = 'Sign In to Landlord Dashboard';
+    if (title) title.textContent = 'Landlord Sign In';
+  }
+}
+
+function handleTenantQuickLogin() {
+  const phone = document.getElementById('auth-phone')?.value || '+254 712 345 678';
+  store.currentUser = {
+    name: 'Sarah K.',
+    role: 'tenant',
+    phone: phone,
+    isApproved: false,
+    isDemo: false
+  };
+  try {
+    localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
+  } catch (e) {}
+  updateHeaderAuthDisplay();
+  closeAllModals();
+  showToast('Signed in successfully as Tenant.');
+}
+
+function handleDemoLogin(role) {
+  if (role === 'landlord') {
+    store.currentUser = {
+      name: 'David M. (Verified Landlord)',
+      email: 'david@apexrentals.co.ke',
+      phone: '+254 798 792 730',
+      role: 'landlord',
+      isApproved: true,
+      isDemo: true
+    };
+    try {
+      localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
+    } catch (e) {}
+    updateHeaderAuthDisplay();
+    closeAllModals();
+    showToast('Signed in as Approved Demo Landlord.');
+    renderLandlordTable();
+    navigateTo('landlord');
+  } else {
+    store.currentUser = {
+      name: 'Sarah K. (Demo Tenant)',
+      role: 'tenant',
+      phone: '+254 712 345 678',
+      isApproved: false,
+      isDemo: true
+    };
+    try {
+      localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
+    } catch (e) {}
+    updateHeaderAuthDisplay();
+    closeAllModals();
+    showToast('Signed in as Demo Tenant.');
+  }
+}
+
+function handleHeaderAuthClick() {
+  if (store.currentUser && store.currentUser.role === 'landlord') {
+    navigateTo('landlord');
+  } else {
+    openAuthModal();
+  }
+}
+
+function handleLandlordAddListingClick() {
+  if (!store.currentUser || store.currentUser.role === 'tenant') {
+    showToast('🔒 Landlord sign-in required to post listings.');
+    openAuthModal();
+    switchAuthTab('landlord');
+    return;
+  }
+  if (!store.currentUser.isApproved) {
+    showToast('⏳ Your account is pending verification. Only approved landlords can post.');
+    return;
+  }
+  openAddListingModal();
+}
+
+async function handleSignOut() {
+  const sb = getSupabaseClient();
+  if (sb) {
+    try { await sb.auth.signOut(); } catch (e) {}
+  }
+  store.currentUser = null;
+  try {
+    localStorage.removeItem('avenur_current_user');
+  } catch (e) {}
+  updateHeaderAuthDisplay();
+  showToast('Signed out successfully.');
+  renderLandlordTable();
+  navigateTo('home');
+}
+
+function updateHeaderAuthDisplay() {
+  const btn = document.getElementById('header-auth-btn');
+  if (!btn) return;
+  if (store.currentUser && store.currentUser.role === 'landlord') {
+    const firstName = store.currentUser.name ? store.currentUser.name.split(' ')[0] : 'Landlord';
+    btn.innerHTML = `👤 ${firstName} ${store.currentUser.isApproved ? '✓' : '(Pending)'}`;
+    btn.title = `Signed in as ${store.currentUser.name || store.currentUser.email}. Click to view Landlord Portal.`;
+    btn.onclick = () => navigateTo('landlord');
+  } else if (store.currentUser && store.currentUser.role === 'tenant') {
+    btn.innerHTML = `👤 ${store.currentUser.name || 'Tenant'}`;
+    btn.title = 'Tenant Pass Active';
+    btn.onclick = () => openAuthModal();
+  } else {
+    btn.innerHTML = `Sign in`;
+    btn.onclick = () => openAuthModal();
+  }
+}
+
+async function initSupabaseAuthAndData() {
+  updateHeaderAuthDisplay();
+  const sb = getSupabaseClient();
+  if (!sb) return;
+
+  try {
+    // 1. Check existing session
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      const { data: profile } = await sb
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      store.currentUser = {
+        id: session.user.id,
+        email: session.user.email,
+        name: profile?.full_name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+        phone: profile?.phone || session.user.user_metadata?.phone || '',
+        role: profile?.role || 'landlord',
+        isApproved: profile ? !!profile.is_approved : false,
+        isDemo: false
+      };
+      try {
+        localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
+      } catch (e) {}
+      updateHeaderAuthDisplay();
+      if (store.currentView === 'landlord') renderLandlordTable();
+    }
+
+    // 2. Auth State Change Listener
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if (session && session.user) {
+        const { data: profile } = await sb
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        store.currentUser = {
+          id: session.user.id,
+          email: session.user.email,
+          name: profile?.full_name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+          phone: profile?.phone || session.user.user_metadata?.phone || '',
+          role: profile?.role || 'landlord',
+          isApproved: profile ? !!profile.is_approved : false,
+          isDemo: false
+        };
+        try {
+          localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
+        } catch (e) {}
+      } else {
+        if (store.currentUser && !store.currentUser.isDemo) {
+          store.currentUser = null;
+          try { localStorage.removeItem('avenur_current_user'); } catch (e) {}
+        }
+      }
+      updateHeaderAuthDisplay();
+      if (store.currentView === 'landlord') renderLandlordTable();
+    });
+
+    // 3. Fetch verified properties from Supabase
+    const { data: dbProps, error } = await sb
+      .from('properties')
+      .select('*')
+      .eq('status', 'available')
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(dbProps) && dbProps.length > 0) {
+      const mapped = dbProps.map(row => ({
+        id: row.id,
+        title: row.title,
+        area: row.area,
+        city: row.estate || 'Nairobi',
+        price: Number(row.rent) || 30000,
+        deposit: Number(row.deposit) || Number(row.rent) || 30000,
+        period: 'month',
+        type: row.bedrooms === '0' || row.bedrooms === 0 ? 'studio' : `${row.bedrooms}bed`,
+        beds: isNaN(Number(row.bedrooms)) ? 2 : Number(row.bedrooms),
+        baths: Number(row.bathrooms) || 1,
+        parking: 1,
+        floor: '2nd',
+        rating: 9.8,
+        reviewCount: 1,
+        badge: 'Verified Live',
+        verified: row.verified !== false,
+        furnished: false,
+        gated: true,
+        distanceHint: 'Verified Location',
+        description: row.title + ' — Audited and verified live on Avenur.',
+        images: Array.isArray(row.photos) && row.photos.length > 0 ? row.photos : [
+          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=80&auto=format&fit=crop'
+        ],
+        amenities: Array.isArray(row.features) && row.features.length > 0 ? row.features : ['Water 24/7', 'Perimeter Security'],
+        landlord: {
+          name: row.landlord_name || 'Verified Property Owner',
+          phone: row.landlord_phone || store.businessPhone,
+          whatsapp: store.businessWhatsapp,
+          caretaker: 'On-site caretaker',
+          responseTime: 'Within 15 mins'
+        },
+        unitMix: [
+          { type: `${row.bedrooms || 2} Bedroom`, size: '80 sqm', price: Number(row.rent), deposit: Number(row.deposit || row.rent), available: 1 }
+        ]
+      }));
+
+      const dbIds = new Set(mapped.map(m => m.id));
+      const remainingSeed = INITIAL_PROPERTIES.filter(p => !dbIds.has(p.id));
+      store.properties = [...mapped, ...remainingSeed];
+
+      renderCatalog();
+      renderFeaturedCarousel();
+      if (store.currentView === 'landlord') renderLandlordTable();
+    }
+  } catch (err) {
+    console.warn("Supabase fetch error:", err);
+  }
 }
 
 function openAuthModal() {
@@ -2084,11 +2461,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Add Listing Form Submit
+  // Add Listing Form Submit (With Supabase Cloud Persistence & Telegram Broadcast)
   const addListingForm = document.getElementById('form-add-listing');
   if (addListingForm) {
-    addListingForm.addEventListener('submit', (e) => {
+    addListingForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (!store.currentUser || !store.currentUser.isApproved) {
+        showToast("⚠️ Only approved landlords can publish live properties.");
+        return;
+      }
+
       const title = document.getElementById('new-prop-title')?.value || 'Modern Urban Apartment';
       const area = document.getElementById('new-prop-area')?.value || 'Kilimani';
       const city = document.getElementById('new-prop-city')?.value || 'Nairobi';
@@ -2124,8 +2507,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         amenities: ["Water 24/7", "Perimeter Security", "CCTV", "Balcony"],
         landlord: {
-          name: "You (Property Owner)",
-          phone: store.businessPhone,
+          name: store.currentUser.name || "Verified Landlord",
+          phone: store.currentUser.phone || store.businessPhone,
           whatsapp: store.businessWhatsapp,
           caretaker: "Caretaker on-call",
           responseTime: "Instant"
@@ -2135,9 +2518,150 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
       };
 
+      // Try saving to Supabase if logged in with real account
+      const sb = getSupabaseClient();
+      if (sb && store.currentUser && store.currentUser.id && !store.currentUser.isDemo) {
+        try {
+          const { error } = await sb.from('properties').insert([{
+            id: newListing.id,
+            title: newListing.title,
+            area: newListing.area,
+            estate: newListing.city,
+            rent: newListing.price,
+            deposit: newListing.deposit,
+            bedrooms: String(newListing.beds),
+            bathrooms: newListing.baths,
+            type: newListing.type,
+            features: newListing.amenities,
+            photos: newListing.images,
+            verified: true,
+            watermark: 'Avenur Verified · 0798792730',
+            landlord_name: newListing.landlord.name,
+            landlord_phone: newListing.landlord.phone,
+            status: 'available'
+          }]);
+          if (error) console.warn("Supabase insert warning:", error);
+        } catch (err) {
+          console.warn("Supabase insert error:", err);
+        }
+      }
+
       store.addListing(newListing);
       broadcastToTelegramChannel(newListing);
       closeAllModals();
+    });
+  }
+
+  // Landlord Supabase Auth Form Submit (Login & Register)
+  const landlordAuthForm = document.getElementById('form-landlord-auth');
+  if (landlordAuthForm) {
+    landlordAuthForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('landlord-email')?.value.trim();
+      const password = document.getElementById('landlord-password')?.value;
+      const sb = getSupabaseClient();
+
+      if (!sb) {
+        showToast("⚠️ Database client initializing. Please try again.");
+        return;
+      }
+
+      if (landlordAuthMode === 'signin') {
+        const submitBtn = document.getElementById('btn-landlord-auth-submit');
+        if (submitBtn) submitBtn.disabled = true;
+        showToast("Signing in to Supabase...");
+
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        if (submitBtn) submitBtn.disabled = false;
+
+        if (error) {
+          showToast("❌ " + error.message);
+          return;
+        }
+
+        // Fetch landlord profile
+        const { data: profile } = await sb
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        store.currentUser = {
+          id: data.user.id,
+          email: data.user.email,
+          name: profile?.full_name || data.user.email.split('@')[0],
+          phone: profile?.phone || '',
+          role: profile?.role || 'landlord',
+          isApproved: profile ? !!profile.is_approved : false,
+          isDemo: false
+        };
+
+        try {
+          localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
+        } catch (err) {}
+
+        updateHeaderAuthDisplay();
+        closeAllModals();
+        showToast(`✅ Welcome back, ${store.currentUser.name}!`);
+        renderLandlordTable();
+        navigateTo('landlord');
+      } else {
+        // Sign Up Mode
+        const fullName = document.getElementById('landlord-fullname')?.value.trim() || 'Landlord';
+        const phone = document.getElementById('landlord-phone')?.value.trim() || '';
+        const submitBtn = document.getElementById('btn-landlord-auth-submit');
+        if (submitBtn) submitBtn.disabled = true;
+
+        showToast("Registering landlord account...");
+        const { data, error } = await sb.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName, phone: phone }
+          }
+        });
+        if (submitBtn) submitBtn.disabled = false;
+
+        if (error) {
+          showToast("❌ " + error.message);
+          return;
+        }
+
+        // Insert pending profile
+        if (data?.user) {
+          try {
+            await sb.from('profiles').insert([{
+              id: data.user.id,
+              email: email,
+              full_name: fullName,
+              phone: phone,
+              role: 'landlord',
+              is_approved: false
+            }]);
+          } catch (err) {
+            console.warn("Profile insert notice:", err);
+          }
+
+          store.currentUser = {
+            id: data.user.id,
+            email: email,
+            name: fullName,
+            phone: phone,
+            role: 'landlord',
+            isApproved: false,
+            isDemo: false
+          };
+          try {
+            localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
+          } catch (err) {}
+        }
+
+        updateHeaderAuthDisplay();
+        closeAllModals();
+        showToast("📝 Registration received! Account pending admin approval under our Zero-Ghost policy.");
+        renderLandlordTable();
+        navigateTo('landlord');
+      }
     });
   }
 
@@ -2212,6 +2736,10 @@ document.addEventListener('DOMContentLoaded', () => {
   updateSavedCounters();
   renderCatalog();
   renderFeaturedCarousel();
+  updateHeaderAuthDisplay();
+
+  // Initialize Supabase Auth state & load live properties
+  initSupabaseAuthAndData();
 
   // Check initial hash route (e.g. #/rentals/bedsitters-in-ruaka-under-15k)
   if (window.location.hash) {

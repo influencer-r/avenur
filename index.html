@@ -58,7 +58,7 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           <span>List Property</span>
         </button>
-        <button class="btn btn-ghost-white btn-sm" onclick="openAuthModal()">Sign in</button>
+        <button id="header-auth-btn" class="btn btn-ghost-white btn-sm" onclick="handleHeaderAuthClick()">Sign in</button>
       </div>
     </div>
   </header>
@@ -701,12 +701,15 @@
 
         <div style="display:flex; gap:0.75rem;">
           <button class="btn btn-outline btn-sm" onclick="navigateTo('home')">Switch to Tenant View</button>
-          <button class="btn btn-primary btn-sm" onclick="openAddListingModal()">
+          <button id="btn-landlord-add-listing" class="btn btn-primary btn-sm" onclick="handleLandlordAddListingClick()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>+ Add New Listing</span>
           </button>
         </div>
       </div>
+
+      <!-- Landlord Verification Status Alert -->
+      <div id="landlord-auth-banner"></div>
 
       <!-- KPI Metrics Grid -->
       <div class="kpi-metrics-grid">
@@ -1233,34 +1236,83 @@
        MODAL 5: AUTH & QUICK LOGIN
   ============================================================== -->
   <div id="modal-auth" class="modal-overlay">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 480px;">
       <div class="modal-header">
-        <h3 class="modal-title">Sign in to Avenur</h3>
+        <h3 class="modal-title" id="auth-modal-title">Sign in to Avenur</h3>
         <button class="modal-close-btn modal-close-trigger">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
 
       <div class="modal-body">
+        <!-- Auth Role Switcher -->
         <div style="display:flex; border-bottom:1px solid #E2E8F0; margin-bottom:1.25rem;">
-          <button class="auth-tab-btn active" style="flex:1; padding:0.6rem; border:none; background:none; font-weight:700; color:#4F46E5; border-bottom:2px solid #4F46E5; cursor:pointer;">Tenant Pass</button>
-          <button class="auth-tab-btn" style="flex:1; padding:0.6rem; border:none; background:none; font-weight:700; color:#64748B; cursor:pointer;">Landlord Login</button>
+          <button id="tab-auth-tenant" class="auth-tab-btn active" style="flex:1; padding:0.6rem; border:none; background:none; font-weight:700; color:#4F46E5; border-bottom:2px solid #4F46E5; cursor:pointer;" onclick="switchAuthTab('tenant')">Tenant Pass</button>
+          <button id="tab-auth-landlord" class="auth-tab-btn" style="flex:1; padding:0.6rem; border:none; background:none; font-weight:700; color:#64748B; cursor:pointer;" onclick="switchAuthTab('landlord')">Landlord Portal</button>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="auth-phone">Mobile Phone (M-Pesa or SMS)</label>
-          <input id="auth-phone" type="tel" class="form-input" value="+254 712 345 678">
+        <!-- Panel 1: Tenant Pass -->
+        <div id="auth-panel-tenant">
+          <div class="form-group">
+            <label class="form-label" for="auth-phone">Mobile Phone (M-Pesa / SMS)</label>
+            <input id="auth-phone" type="tel" class="form-input" value="+254 712 345 678">
+            <span style="font-size:0.75rem; color:#64748B; margin-top:0.25rem; display:block;">Quick pass to save favorites and unlock verified landlord contacts.</span>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="handleTenantQuickLogin()">
+            Continue as Tenant
+          </button>
         </div>
 
-        <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="closeAllModals(); showToast('Signed in successfully as Sarah K.');">
-          Continue with One-Time Passcode
-        </button>
+        <!-- Panel 2: Landlord Portal (Supabase Auth) -->
+        <div id="auth-panel-landlord" style="display:none;">
+          <!-- Landlord Mode Toggle: Sign In vs Sign Up -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-size:0.8125rem;">
+            <span id="landlord-mode-label" style="font-weight:700; color:#0F172A;">Sign in to manage properties</span>
+            <button type="button" id="landlord-mode-toggle" onclick="toggleLandlordAuthMode()" style="background:none; border:none; color:#4F46E5; font-weight:700; cursor:pointer; text-decoration:underline;">
+              Need an account? Register
+            </button>
+          </div>
 
+          <form id="form-landlord-auth">
+            <div id="landlord-signup-fields" style="display:none;">
+              <div class="form-group">
+                <label class="form-label" for="landlord-fullname">Full Name / Estate Company</label>
+                <input id="landlord-fullname" type="text" class="form-input" placeholder="e.g. John Kamau">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="landlord-phone">WhatsApp / Contact Phone</label>
+                <input id="landlord-phone" type="tel" class="form-input" placeholder="e.g. 0712345678">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="landlord-email">Email Address</label>
+              <input id="landlord-email" type="email" class="form-input" placeholder="landlord@example.com" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="landlord-password">Password</label>
+              <input id="landlord-password" type="password" class="form-input" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <!-- Approval Policy Notice -->
+            <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px; padding:0.65rem 0.85rem; margin-bottom:1rem; font-size:0.75rem; color:#166534; line-height:1.4;">
+              <strong>🛡️ Zero-Ghost Policy:</strong> Only admin-approved landlords can publish live. New registrations undergo verification before property listing is unlocked.
+            </div>
+
+            <button type="submit" id="btn-landlord-auth-submit" class="btn btn-primary" style="width:100%;">
+              Sign In to Landlord Dashboard
+            </button>
+          </form>
+        </div>
+
+        <!-- Instant Prototype Demo Shortcuts -->
         <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid #E2E8F0; text-align:center;">
           <p style="font-size:0.75rem; color:#64748B;">Instant Prototype Demo Shortcuts:</p>
           <div style="display:flex; gap:0.5rem; justify-content:center; margin-top:0.5rem;">
-            <button class="btn btn-outline btn-sm" onclick="closeAllModals(); showToast('Signed in as Demo Tenant');">Demo Tenant</button>
-            <button class="btn btn-outline btn-sm" onclick="closeAllModals(); navigateTo('landlord'); showToast('Signed in as Demo Landlord');">Demo Landlord</button>
+            <button class="btn btn-outline btn-sm" onclick="handleDemoLogin('tenant')">Demo Tenant</button>
+            <button class="btn btn-outline btn-sm" onclick="handleDemoLogin('landlord')">Demo Landlord (Approved)</button>
           </div>
         </div>
       </div>
@@ -1531,6 +1583,8 @@
   <!-- Toast Center -->
   <div id="toast-center" class="toast-center"></div>
 
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- App Script -->
   <script src="app.js"></script>
 </body>
