@@ -983,6 +983,16 @@ function renderCatalog() {
   container.innerHTML = filtered.map(p => renderPropertyCard(p, store.viewMode)).join('');
 }
 
+function toggleMobileFilters() {
+  const sidebar = document.getElementById('catalog-filters-sidebar');
+  const btnText = document.getElementById('mobile-filter-btn-text');
+  if (!sidebar) return;
+  sidebar.classList.toggle('mobile-open');
+  if (btnText) {
+    btnText.textContent = sidebar.classList.contains('mobile-open') ? 'Hide Filters ▴' : 'Filter Homes & Budget ▾';
+  }
+}
+
 function resetFilters() {
   store.filters = {
     area: '',

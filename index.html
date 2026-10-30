@@ -402,8 +402,17 @@
   ============================================================== -->
   <main id="view-catalog" class="view-screen">
     <div class="container catalog-layout">
+      <!-- Mobile Filter Toggle Bar (Shown on Mobile screens) -->
+      <div class="mobile-filter-bar">
+        <button type="button" class="btn btn-outline btn-sm" onclick="toggleMobileFilters()" style="flex:1; justify-content:center; font-weight:700;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          <span id="mobile-filter-btn-text">Filter Homes & Budget ▾</span>
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="resetFilters()">Reset</button>
+      </div>
+
       <!-- Filter Sidebar -->
-      <aside class="filter-sidebar">
+      <aside id="catalog-filters-sidebar" class="filter-sidebar">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
           <h3 style="font-size:1.1rem; font-weight:800; color:#0F172A;">Filters</h3>
           <button class="btn btn-outline btn-sm" onclick="resetFilters()">Reset</button>
