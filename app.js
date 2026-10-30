@@ -1217,7 +1217,6 @@ function renderLandlordTable() {
           </div>
           <div style="display:flex; gap:0.5rem;">
             <button class="btn btn-sm" style="background:#D97706; color:#FFF; font-weight:700;" onclick="openAuthModal(); switchAuthTab('landlord');">Sign in as Landlord</button>
-            <button class="btn btn-outline btn-sm" onclick="handleDemoLogin('landlord')">Quick Demo Landlord</button>
           </div>
         </div>
       `;
@@ -1253,7 +1252,7 @@ function renderLandlordTable() {
             <div style="color:#059669; font-size:1.2rem;">✅</div>
             <div>
               <strong style="color:#065F46; font-size:0.9375rem;">Approved Landlord: ${store.currentUser.name || store.currentUser.email}</strong>
-              <span style="color:#047857; font-size:0.8125rem; margin-left:0.5rem;">· Verified Live Publisher (${store.currentUser.isDemo ? 'Prototype Demo' : 'Supabase Cloud'})</span>
+              <span style="color:#047857; font-size:0.8125rem; margin-left:0.5rem;">· Verified Publisher</span>
             </div>
           </div>
           <button class="btn btn-outline btn-sm" onclick="handleSignOut()">Sign Out</button>

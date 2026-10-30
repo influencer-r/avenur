@@ -1305,16 +1305,6 @@
               Sign In to Landlord Dashboard
             </button>
           </form>
-        </div>
-
-        <!-- Instant Prototype Demo Shortcuts -->
-        <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid #E2E8F0; text-align:center;">
-          <p style="font-size:0.75rem; color:#64748B;">Instant Prototype Demo Shortcuts:</p>
-          <div style="display:flex; gap:0.5rem; justify-content:center; margin-top:0.5rem;">
-            <button class="btn btn-outline btn-sm" onclick="handleDemoLogin('tenant')">Demo Tenant</button>
-            <button class="btn btn-outline btn-sm" onclick="handleDemoLogin('landlord')">Demo Landlord (Approved)</button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -1558,26 +1548,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- ==============================================================
-       PROTOTYPE HOTSPOT CONTROLLER (HUD)
-  ============================================================== -->
-  <div class="prototype-hud">
-    <div class="hud-title">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-      <span>Flow HUD:</span>
-    </div>
-    <button class="hud-pill active" data-view="home">1. Home</button>
-    <button class="hud-pill" data-view="catalog">2. Catalog</button>
-    <button class="hud-pill" data-view="detail">3. Detail</button>
-    <button class="hud-pill" data-view="landlord">4. Landlord</button>
-    <button class="hud-pill" data-view="pseo" onclick="navigateToPseo('bedsitters-in-ruaka-under-15k')">5. pSEO Landing</button>
-    <button class="hud-pill" onclick="openAlertsModal()">Alerts</button>
-    <button class="hud-pill" onclick="openDrawer()">Saved</button>
-    <button class="hud-pill" onclick="openContactModal(store.getCurrentListing())">Contact</button>
-    <button class="hud-pill" onclick="openScheduleModal()">Tour</button>
-    <button id="hud-toggle-mode" class="hud-mode-pill" onclick="store.toggleLaunchMode()" title="Toggle between Pilot Seed inventory and Day-0 Zero Inventory">Mode: Seed Inventory</button>
   </div>
 
   <!-- Toast Center -->
