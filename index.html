@@ -737,14 +737,17 @@
 
       <!-- Tabs Bar -->
       <div class="dash-tabs-bar">
-        <button class="dash-tab-btn active">All Listed Properties</button>
+        <button id="dash-tab-props" class="dash-tab-btn active" onclick="switchDashboardTab('properties')">All Listed Properties</button>
+        <button id="dash-tab-admin-approvals" class="dash-tab-btn" style="display:none; color:#4F46E5; font-weight:800; border-bottom-color:#4F46E5;" onclick="switchDashboardTab('admin-approvals')">
+          🛡️ Landlord Approvals (<span id="admin-pending-count">0</span>)
+        </button>
         <button class="dash-tab-btn" onclick="showToast('Viewing inquiries log')">Inquiries & Leads</button>
         <button class="dash-tab-btn" onclick="showToast('Viewing scheduled calendar tours')">Scheduled Tours (8)</button>
         <button class="dash-tab-btn" onclick="showToast('Escrow deposit settings')">Deposit Escrow</button>
       </div>
 
       <!-- Properties Table -->
-      <div class="data-table-wrap">
+      <div id="dash-panel-properties" class="data-table-wrap">
         <table class="data-table">
           <thead>
             <tr>
@@ -757,6 +760,36 @@
             </tr>
           </thead>
           <tbody id="landlord-properties-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Admin Landlords Approval Table (Visible to Master Admin) -->
+      <div id="dash-panel-admin-approvals" class="data-table-wrap" style="display:none;">
+        <div style="padding:1rem 1.25rem; background:#F8FAFC; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div>
+            <h3 style="font-size:1.05rem; font-weight:800; color:#0F172A; margin:0; display:flex; align-items:center; gap:0.4rem;">
+              <span>🛡️ Master Admin: Landlord Verification Desk</span>
+            </h3>
+            <p style="font-size:0.8125rem; color:#64748B; margin:0.2rem 0 0 0;">Review registered landlords and tap Approve to unlock live property publishing privileges.</p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="fetchAndRenderAdminLandlords()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            <span>Refresh Landlords</span>
+          </button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Landlord / Company</th>
+              <th>WhatsApp / Phone</th>
+              <th>Registered</th>
+              <th>Current Status</th>
+              <th>Quick Approval Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-landlords-tbody">
+            <tr><td colspan="5" style="text-align:center; padding:2rem; color:#64748B;">No pending landlord registrations found.</td></tr>
+          </tbody>
         </table>
       </div>
     </div>

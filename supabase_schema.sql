@@ -54,7 +54,15 @@ CREATE POLICY "Admins can view all profiles"
 ON public.profiles FOR ALL 
 TO authenticated 
 USING (
-  EXISTS (
+  auth.jwt() ->> 'email' = 'avenurliving@gmail.com'
+  OR EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+)
+WITH CHECK (
+  auth.jwt() ->> 'email' = 'avenurliving@gmail.com'
+  OR EXISTS (
     SELECT 1 FROM public.profiles 
     WHERE id = auth.uid() AND role = 'admin'
   )

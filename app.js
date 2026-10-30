@@ -498,6 +498,16 @@ function getSupabaseClient() {
   return supabaseClient;
 }
 
+const ADMIN_EMAILS = new Set(['avenurliving@gmail.com']);
+
+function isAdmin(user = null) {
+  const target = user || (typeof store !== 'undefined' ? store.currentUser : null);
+  if (!target) return false;
+  if (target.role === 'admin') return true;
+  const email = (target.email || '').toLowerCase().trim();
+  return ADMIN_EMAILS.has(email);
+}
+
 // ==========================================
 // 3. APPLICATION STATE STORE
 // ==========================================
@@ -1203,9 +1213,32 @@ function initAccordions() {
 function renderLandlordTable() {
   const banner = document.getElementById('landlord-auth-banner');
   const addBtn = document.getElementById('btn-landlord-add-listing');
+  const dashTabAdmin = document.getElementById('dash-tab-admin-approvals');
+
+  const adminMode = isAdmin();
+  if (dashTabAdmin) {
+    dashTabAdmin.style.display = adminMode ? 'inline-flex' : 'none';
+  }
 
   if (banner) {
-    if (!store.currentUser || store.currentUser.role === 'tenant') {
+    if (adminMode) {
+      banner.innerHTML = `
+        <div style="background:#EEF2FF; border:1px solid #C7D2FE; border-radius:8px; padding:0.85rem 1.25rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <div style="color:#4F46E5; font-size:1.25rem;">🛡️</div>
+            <div>
+              <strong style="color:#1E1B4B; font-size:0.9375rem;">Master Administrator (${store.currentUser.email || 'avenurliving@gmail.com'})</strong>
+              <span style="color:#4338CA; font-size:0.8125rem; margin-left:0.5rem;">· Verification Desk & Full Publishing Access Active</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-sm" style="background:#4F46E5; color:#FFF; font-weight:700;" onclick="switchDashboardTab('admin-approvals')">Landlord Approvals Desk</button>
+            <button class="btn btn-outline btn-sm" onclick="handleSignOut()">Sign Out</button>
+          </div>
+        </div>
+      `;
+      if (addBtn) addBtn.style.opacity = '1';
+    } else if (!store.currentUser || store.currentUser.role === 'tenant') {
       banner.innerHTML = `
         <div style="background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
           <div style="display:flex; align-items:center; gap:0.75rem;">
@@ -1245,7 +1278,7 @@ function renderLandlordTable() {
       `;
       if (addBtn) addBtn.style.opacity = '0.7';
     } else {
-      // Approved landlord or admin
+      // Approved landlord
       banner.innerHTML = `
         <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:0.85rem 1.25rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
           <div style="display:flex; align-items:center; gap:0.6rem;">
@@ -1292,6 +1325,151 @@ function renderLandlordTable() {
       </td>
     </tr>
   `).join('');
+
+  if (adminMode) {
+    updateAdminPendingBadge();
+  }
+}
+
+function switchDashboardTab(tab) {
+  const tabProps = document.getElementById('dash-tab-props');
+  const tabAdmin = document.getElementById('dash-tab-admin-approvals');
+  const panelProps = document.getElementById('dash-panel-properties');
+  const panelAdmin = document.getElementById('dash-panel-admin-approvals');
+
+  if (tab === 'admin-approvals') {
+    if (tabProps) tabProps.classList.remove('active');
+    if (tabAdmin) tabAdmin.classList.add('active');
+    if (panelProps) panelProps.style.display = 'none';
+    if (panelAdmin) panelAdmin.style.display = 'block';
+    fetchAndRenderAdminLandlords();
+  } else {
+    if (tabAdmin) tabAdmin.classList.remove('active');
+    if (tabProps) tabProps.classList.add('active');
+    if (panelAdmin) panelAdmin.style.display = 'none';
+    if (panelProps) panelProps.style.display = 'block';
+  }
+}
+
+async function updateAdminPendingBadge() {
+  const counter = document.getElementById('admin-pending-count');
+  const sb = getSupabaseClient();
+  if (!sb || !counter) return;
+  try {
+    const { data: pending } = await sb
+      .from('profiles')
+      .select('id, is_approved')
+      .eq('is_approved', false);
+    if (pending) {
+      counter.textContent = pending.length;
+    }
+  } catch (e) {}
+}
+
+async function fetchAndRenderAdminLandlords() {
+  const tbody = document.getElementById('admin-landlords-tbody');
+  const counter = document.getElementById('admin-pending-count');
+  const sb = getSupabaseClient();
+  if (!sb || !tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:#64748B;">Connecting to Supabase...</td></tr>`;
+
+  try {
+    const { data: profiles, error } = await sb
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:#DC2626;">Error: ${error.message}</td></tr>`;
+      return;
+    }
+
+    const landlords = (profiles || []).filter(p => !ADMIN_EMAILS.has((p.email || '').toLowerCase()));
+    const pending = landlords.filter(p => !p.is_approved);
+    if (counter) counter.textContent = pending.length;
+
+    if (landlords.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2.5rem; color:#64748B;">No landlord accounts registered yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = landlords.map(l => {
+      const isApproved = !!l.is_approved;
+      const cleanPhone = (l.phone || '').replace(/\s+/g, '');
+      const dateStr = l.created_at ? new Date(l.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : 'Recently';
+      const displayName = l.full_name || l.email.split('@')[0];
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:700; color:#0F172A;">${displayName}</div>
+            <div style="font-size:0.75rem; color:#64748B;">${l.email}</div>
+          </td>
+          <td>
+            ${l.phone ? `
+              <div style="display:flex; align-items:center; gap:0.4rem;">
+                <span>${l.phone}</span>
+                <a href="https://wa.me/${cleanPhone.startsWith('0') ? '254' + cleanPhone.slice(1) : cleanPhone}?text=Hi%20${encodeURIComponent(displayName)},%20this%20is%20Avenur%20Verification%20Desk." target="_blank" class="btn btn-sm" style="padding:0.2rem 0.45rem; background:#10B981; color:#fff; font-size:0.7rem; border-radius:4px; text-decoration:none;">WhatsApp</a>
+              </div>
+            ` : '<span style="color:#94A3B8;">No phone</span>'}
+          </td>
+          <td style="font-size:0.8125rem; color:#64748B;">${dateStr}</td>
+          <td>
+            <span style="background:${isApproved ? '#ECFDF5' : '#FFFBEB'}; color:${isApproved ? '#059669' : '#D97706'}; font-size:0.75rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:4px; display:inline-flex; align-items:center; gap:0.3rem;">
+              ${isApproved ? '✅ Approved' : '⏳ Pending Audit'}
+            </span>
+          </td>
+          <td>
+            ${isApproved ? `
+              <button class="btn btn-outline btn-sm" style="color:#DC2626; border-color:#FCA5A5;" onclick="toggleLandlordApproval('${l.id}', false, '${displayName}')">
+                Revoke
+              </button>
+            ` : `
+              <button class="btn btn-sm" style="background:#10B981; color:#FFFFFF; font-weight:800; border:1px solid #10B981;" onclick="toggleLandlordApproval('${l.id}', true, '${displayName}', '${cleanPhone}')">
+                ✓ Approve Landlord
+              </button>
+            `}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:#DC2626;">Error loading landlords: ${err.message}</td></tr>`;
+  }
+}
+
+async function toggleLandlordApproval(landlordId, newStatus, landlordName, phone) {
+  const sb = getSupabaseClient();
+  if (!sb) return;
+
+  showToast(newStatus ? `Approving ${landlordName}...` : `Updating ${landlordName}...`);
+  try {
+    const { error } = await sb
+      .from('profiles')
+      .update({ is_approved: newStatus })
+      .eq('id', landlordId);
+
+    if (error) {
+      showToast(`❌ Update failed: ${error.message}`);
+      return;
+    }
+
+    showToast(newStatus ? `🎉 Landlord ${landlordName} approved live!` : `Status revoked for ${landlordName}.`);
+    fetchAndRenderAdminLandlords();
+
+    if (newStatus && phone) {
+      const waText = encodeURIComponent(`Hi ${landlordName}, your Avenur landlord account has been verified and approved! You can now log in at https://avenurliving.co.ke to publish your properties live.`);
+      const targetPhone = phone.startsWith('0') ? '254' + phone.slice(1) : phone;
+      setTimeout(() => {
+        if (confirm(`Notify ${landlordName} on WhatsApp that their account has been approved?`)) {
+          window.open(`https://wa.me/${targetPhone}?text=${waText}`, '_blank');
+        }
+      }, 300);
+    }
+  } catch (err) {
+    showToast(`❌ Error: ${err.message}`);
+  }
 }
 
 // ==========================================
@@ -1587,7 +1765,14 @@ async function handleSignOut() {
 function updateHeaderAuthDisplay() {
   const btn = document.getElementById('header-auth-btn');
   if (!btn) return;
-  if (store.currentUser && store.currentUser.role === 'landlord') {
+  if (isAdmin()) {
+    btn.innerHTML = `🛡️ Admin Desk`;
+    btn.title = `Signed in as Master Admin (${store.currentUser.email}). Click to view Landlord Approvals Desk.`;
+    btn.onclick = () => {
+      navigateTo('landlord');
+      switchDashboardTab('admin-approvals');
+    };
+  } else if (store.currentUser && store.currentUser.role === 'landlord') {
     const firstName = store.currentUser.name ? store.currentUser.name.split(' ')[0] : 'Landlord';
     btn.innerHTML = `👤 ${firstName} ${store.currentUser.isApproved ? '✓' : '(Pending)'}`;
     btn.title = `Signed in as ${store.currentUser.name || store.currentUser.email}. Click to view Landlord Portal.`;
@@ -1617,18 +1802,26 @@ async function initSupabaseAuthAndData() {
         .eq('id', session.user.id)
         .maybeSingle();
 
+      const isMasterAdmin = ADMIN_EMAILS.has((session.user.email || '').toLowerCase());
       store.currentUser = {
         id: session.user.id,
         email: session.user.email,
-        name: profile?.full_name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+        name: profile?.full_name || session.user.user_metadata?.full_name || (isMasterAdmin ? 'Master Admin' : session.user.email.split('@')[0]),
         phone: profile?.phone || session.user.user_metadata?.phone || '',
-        role: profile?.role || 'landlord',
-        isApproved: profile ? !!profile.is_approved : false,
+        role: isMasterAdmin ? 'admin' : (profile?.role || 'landlord'),
+        isApproved: isMasterAdmin ? true : (profile ? !!profile.is_approved : false),
         isDemo: false
       };
       try {
         localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
       } catch (e) {}
+
+      if (isMasterAdmin && profile?.role !== 'admin') {
+        try {
+          await sb.from('profiles').update({ role: 'admin', is_approved: true }).eq('id', session.user.id);
+        } catch (e) {}
+      }
+
       updateHeaderAuthDisplay();
       if (store.currentView === 'landlord') renderLandlordTable();
     }
@@ -1642,13 +1835,14 @@ async function initSupabaseAuthAndData() {
           .eq('id', session.user.id)
           .maybeSingle();
 
+        const isMasterAdmin = ADMIN_EMAILS.has((session.user.email || '').toLowerCase());
         store.currentUser = {
           id: session.user.id,
           email: session.user.email,
-          name: profile?.full_name || session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+          name: profile?.full_name || session.user.user_metadata?.full_name || (isMasterAdmin ? 'Master Admin' : session.user.email.split('@')[0]),
           phone: profile?.phone || session.user.user_metadata?.phone || '',
-          role: profile?.role || 'landlord',
-          isApproved: profile ? !!profile.is_approved : false,
+          role: isMasterAdmin ? 'admin' : (profile?.role || 'landlord'),
+          isApproved: isMasterAdmin ? true : (profile ? !!profile.is_approved : false),
           isDemo: false
         };
         try {
@@ -2585,15 +2779,22 @@ document.addEventListener('DOMContentLoaded', () => {
           .eq('id', data.user.id)
           .maybeSingle();
 
+        const isMaster = ADMIN_EMAILS.has((data.user.email || '').toLowerCase());
         store.currentUser = {
           id: data.user.id,
           email: data.user.email,
-          name: profile?.full_name || data.user.email.split('@')[0],
+          name: profile?.full_name || (isMaster ? 'Master Admin' : data.user.email.split('@')[0]),
           phone: profile?.phone || '',
-          role: profile?.role || 'landlord',
-          isApproved: profile ? !!profile.is_approved : false,
+          role: isMaster ? 'admin' : (profile?.role || 'landlord'),
+          isApproved: isMaster ? true : (profile ? !!profile.is_approved : false),
           isDemo: false
         };
+
+        if (isMaster && profile?.role !== 'admin') {
+          try {
+            await sb.from('profiles').update({ role: 'admin', is_approved: true }).eq('id', data.user.id);
+          } catch(e) {}
+        }
 
         try {
           localStorage.setItem('avenur_current_user', JSON.stringify(store.currentUser));
@@ -2601,9 +2802,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateHeaderAuthDisplay();
         closeAllModals();
-        showToast(`✅ Welcome back, ${store.currentUser.name}!`);
+        showToast(isMaster ? `🛡️ Welcome back, Master Admin!` : `✅ Welcome back, ${store.currentUser.name}!`);
         renderLandlordTable();
         navigateTo('landlord');
+        if (isMaster) switchDashboardTab('admin-approvals');
       } else {
         // Sign Up Mode
         const fullName = document.getElementById('landlord-fullname')?.value.trim() || 'Landlord';
@@ -2627,15 +2829,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Insert pending profile
+        const isMaster = ADMIN_EMAILS.has((email || '').toLowerCase());
         if (data?.user) {
           try {
             await sb.from('profiles').insert([{
               id: data.user.id,
               email: email,
-              full_name: fullName,
+              full_name: isMaster ? 'Master Admin' : fullName,
               phone: phone,
-              role: 'landlord',
-              is_approved: false
+              role: isMaster ? 'admin' : 'landlord',
+              is_approved: isMaster ? true : false
             }]);
           } catch (err) {
             console.warn("Profile insert notice:", err);
@@ -2644,10 +2847,10 @@ document.addEventListener('DOMContentLoaded', () => {
           store.currentUser = {
             id: data.user.id,
             email: email,
-            name: fullName,
+            name: isMaster ? 'Master Admin' : fullName,
             phone: phone,
-            role: 'landlord',
-            isApproved: false,
+            role: isMaster ? 'admin' : 'landlord',
+            isApproved: isMaster ? true : false,
             isDemo: false
           };
           try {
@@ -2657,9 +2860,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateHeaderAuthDisplay();
         closeAllModals();
-        showToast("📝 Registration received! Account pending admin approval under our Zero-Ghost policy.");
+        showToast(isMaster ? "🛡️ Master Admin registered & activated!" : "📝 Registration received! Account pending admin approval under our Zero-Ghost policy.");
         renderLandlordTable();
         navigateTo('landlord');
+        if (isMaster) switchDashboardTab('admin-approvals');
       }
     });
   }
