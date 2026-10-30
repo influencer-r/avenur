@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Avenur — Verified Residential Living & Rentals</title>
+  <meta name="description" content="Direct verified rental marketplace across Kenya. Browse real photos, check transparent deposits, and contact landlords directly.">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
+  <link rel="apple-touch-icon" href="assets/logo.jpeg">
+  <link rel="stylesheet" href="style.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- ==============================================================
+       DAY-0 PILOT / EARLY ACCESS BANNER
+  ============================================================== -->
+  <div class="pilot-banner">
+    <span class="pilot-tag">Beta Pilot</span>
+    <span>
+      Currently auditing live verified rentals in <strong>Kilimani & Westlands</strong>. Looking elsewhere?
+      <span class="pilot-action-link" onclick="openConciergeModal()">Request a Free Verified Match</span>
+      · Landlords:
+      <span class="pilot-action-link" onclick="openPhotoAuditModal()">Book Free Photo Verification Audit</span>
+    </span>
+  </div>
+
+  <!-- ==============================================================
+       GLOBAL HEADER
+  ============================================================== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <!-- Brand Logo -->
+      <div class="brand-logo" onclick="navigateTo('home')" aria-label="Avenur Home">
+        <img src="assets/logo.jpeg" alt="Avenur Logo" style="height: 38px; width: 38px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+        <span>avenur</span>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="nav-links">
+        <span class="nav-link active" data-view="home" onclick="navigateTo('home')">Home</span>
+        <span class="nav-link" data-view="catalog" onclick="navigateTo('catalog')">Browse Homes</span>
+        <span class="nav-link" onclick="openDrawer()">
+          Saved
+          <span class="nav-badge-count saved-counter-badge" style="display:none;">0</span>
+        </span>
+        <span class="nav-link" data-view="landlord" onclick="navigateTo('landlord')">Landlord Portal</span>
+      </nav>
+
+      <!-- Right Header Actions -->
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn btn-sm" onclick="openAlertsModal()" style="background:#10B981; border:1px solid #10B981; color:#FFFFFF; font-weight:700; display:inline-flex; align-items:center; gap:0.35rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span>Get Alerts</span>
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="navigateTo('landlord')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>List Property</span>
+        </button>
+        <button class="btn btn-ghost-white btn-sm" onclick="openAuthModal()">Sign in</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==============================================================
+       VIEW 1: LANDING / HOME VIEW
+  ============================================================== -->
+  <main id="view-home" class="view-screen active">
+    <!-- Hero Slideshow -->
+    <section class="hero-wrapper">
+      <div id="hero-slides-container"></div>
+      <div class="container hero-content">
+        <div id="hero-dynamic-badge" class="hero-badge">Direct Contact Guarantee</div>
+        <h1 id="hero-dynamic-title" class="hero-title">Find a verified home with absolute certainty.</h1>
+        <p id="hero-dynamic-subtitle" class="hero-subtitle">Browse real photos of verified rentals across Kenya and reach landlords directly — zero middlemen.</p>
+
+        <div class="hero-controls">
+          <div id="hero-caption-tag" class="slide-caption-tag"></div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div id="hero-dots" class="hero-nav-dots"></div>
+            <button id="hero-play-btn" class="hero-circle-btn" aria-label="Pause slideshow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+            </button>
+            <button id="hero-prev-btn" class="hero-circle-btn" aria-label="Previous slide">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"></path></svg>
+            </button>
+            <button id="hero-next-btn" class="hero-circle-btn" aria-label="Next slide">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Floating Search Box -->
+    <div class="container search-container">
+      <form id="hero-search-form" class="search-box-card">
+        <div class="search-field">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <input id="search-location-input" type="text" list="area-suggestions" placeholder="Where to? e.g. Kilimani, Westlands, Karen" class="search-input">
+          <datalist id="area-suggestions">
+            <option value="Westlands"></option>
+            <option value="Kilimani"></option>
+            <option value="Karen"></option>
+            <option value="Ruaka"></option>
+            <option value="Nyali"></option>
+            <option value="Syokimau"></option>
+            <option value="Lavington"></option>
+            <option value="CBD"></option>
+          </datalist>
+        </div>
+
+        <div class="search-field">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"></path><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"></path></svg>
+          <select id="search-type-select" class="search-select">
+            <option value="">Any property type</option>
+            <option value="bedsitter">Bedsitter</option>
+            <option value="studio">Studio</option>
+            <option value="1bed">1 Bedroom</option>
+            <option value="2bed">2 Bedroom</option>
+            <option value="3bed">3 Bedroom</option>
+            <option value="4bed">4+ Bedroom</option>
+            <option value="bnb">BnB / Short stay</option>
+          </select>
+        </div>
+
+        <div class="search-field">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+          <select id="search-budget-select" class="search-select">
+            <option value="200000">Any budget</option>
+            <option value="20000">Up to KES 20,000</option>
+            <option value="35000">Up to KES 35,000</option>
+            <option value="50000">Up to KES 50,000</option>
+            <option value="100000">Up to KES 100,000</option>
+            <option value="200000">Up to KES 200,000</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="height: 54px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Search</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- 3-Pillar Value Props Strip -->
+    <section class="container">
+      <div class="value-props-grid">
+        <div class="value-prop-card">
+          <div class="value-prop-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><polyline points="9 12 12 15 17 9"></polyline></svg>
+          </div>
+          <div>
+            <h4 class="value-prop-title">Every listing verified</h4>
+            <p class="value-prop-desc">Our field audit team checks title ownership and watermarked photos before a home goes live.</p>
+          </div>
+        </div>
+
+        <div class="value-prop-card">
+          <div class="value-prop-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </div>
+          <div>
+            <h4 class="value-prop-title">Talk to the landlord</h4>
+            <p class="value-prop-desc">Direct address and verified landlord phone number. No ghost agents, no hidden viewing fees.</p>
+          </div>
+        </div>
+
+        <div class="value-prop-card">
+          <div class="value-prop-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 12 15 17 9"></polyline></svg>
+          </div>
+          <div>
+            <h4 class="value-prop-title">Report bad listings</h4>
+            <p class="value-prop-desc">Unreachable contact or mismatched photos? Flag it and our moderation team acts within 24 hours.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trending Neighbourhoods -->
+    <section class="container section-block">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Trending neighbourhoods</h2>
+          <p class="section-subtitle">Most searched residential corridors by verified tenants this month</p>
+        </div>
+      </div>
+
+      <div class="trending-grid-top">
+        <div class="area-card featured-large" onclick="store.filters.area='Westlands'; navigateTo('catalog');">
+          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80&auto=format&fit=crop" alt="Westlands" class="area-card-img">
+          <div class="area-card-gradient"></div>
+          <div class="area-card-meta">
+            <h3 class="area-card-title">Westlands</h3>
+            <p class="area-card-count">Nairobi · Browse verified homes</p>
+          </div>
+        </div>
+
+        <div class="area-card featured-large" onclick="store.filters.area='Kilimani'; navigateTo('catalog');">
+          <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=80&auto=format&fit=crop" alt="Kilimani" class="area-card-img">
+          <div class="area-card-gradient"></div>
+          <div class="area-card-meta">
+            <h3 class="area-card-title">Kilimani</h3>
+            <p class="area-card-count">Nairobi · Browse verified homes</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="trending-grid-sub">
+        <div class="area-card featured-small" onclick="store.filters.area='Karen'; navigateTo('catalog');">
+          <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=80&auto=format&fit=crop" alt="Karen" class="area-card-img">
+          <div class="area-card-gradient"></div>
+          <div class="area-card-meta">
+            <h3 class="area-card-title">Karen</h3>
+            <p class="area-card-count">Nairobi · View homes</p>
+          </div>
+        </div>
+
+        <div class="area-card featured-small" onclick="store.filters.area='Ruaka'; navigateTo('catalog');">
+          <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80&auto=format&fit=crop" alt="Ruaka" class="area-card-img">
+          <div class="area-card-gradient"></div>
+          <div class="area-card-meta">
+            <h3 class="area-card-title">Ruaka</h3>
+            <p class="area-card-count">Kiambu · View homes</p>
+          </div>
+        </div>
+
+        <div class="area-card featured-small" onclick="store.filters.area='Nyali'; navigateTo('catalog');">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80&auto=format&fit=crop" alt="Nyali" class="area-card-img">
+          <div class="area-card-gradient"></div>
+          <div class="area-card-meta">
+            <h3 class="area-card-title">Nyali</h3>
+            <p class="area-card-count">Mombasa · View homes</p>
+          </div>
+        </div>
+
+        <div class="area-card featured-small" onclick="store.filters.area='Syokimau'; navigateTo('catalog');">
+          <img src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=1200&q=80&auto=format&fit=crop" alt="Syokimau" class="area-card-img">
+          <div class="area-card-gradient"></div>
+          <div class="area-card-meta">
+            <h3 class="area-card-title">Syokimau</h3>
+            <p class="area-card-count">Machakos · View homes</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Browse by Property Type -->
+    <section class="container section-block">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Browse by property type</h2>
+          <p class="section-subtitle">Direct rental units sorted by architectural category</p>
+        </div>
+      </div>
+
+      <div class="types-grid">
+        <div class="type-pill-card" onclick="store.filters.type='bedsitter'; navigateTo('catalog');">
+          <div class="type-img-box"><img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80&auto=format&fit=crop" alt="Bedsitter"></div>
+          <p class="type-title">Bedsitter</p>
+        </div>
+        <div class="type-pill-card" onclick="store.filters.type='studio'; navigateTo('catalog');">
+          <div class="type-img-box"><img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?w=600&q=80&auto=format&fit=crop" alt="Studio"></div>
+          <p class="type-title">Studio</p>
+        </div>
+        <div class="type-pill-card" onclick="store.filters.type='1bed'; navigateTo('catalog');">
+          <div class="type-img-box"><img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80&auto=format&fit=crop" alt="1 Bedroom"></div>
+          <p class="type-title">1 Bedroom</p>
+        </div>
+        <div class="type-pill-card" onclick="store.filters.type='2bed'; navigateTo('catalog');">
+          <div class="type-img-box"><img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80&auto=format&fit=crop" alt="2 Bedroom"></div>
+          <p class="type-title">2 Bedroom</p>
+        </div>
+        <div class="type-pill-card" onclick="store.filters.type='3bed'; navigateTo('catalog');">
+          <div class="type-img-box"><img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80&auto=format&fit=crop" alt="3 Bedroom"></div>
+          <p class="type-title">3 Bedroom</p>
+        </div>
+        <div class="type-pill-card" onclick="store.filters.type='bnb'; navigateTo('catalog');">
+          <div class="type-img-box"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&auto=format&fit=crop" alt="Short stay"></div>
+          <p class="type-title">Short Stay / BnB</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Homes Tenants Love (Featured Grid) -->
+    <section class="container section-block">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Homes tenants love</h2>
+          <p class="section-subtitle">Top-rated, verified ownership and available for immediate move-in</p>
+        </div>
+        <span class="view-all-link" onclick="navigateTo('catalog')">
+          <span>See all available homes</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"></path></svg>
+        </span>
+      </div>
+
+      <div id="featured-homes-carousel" class="property-cards-grid"></div>
+    </section>
+
+    <!-- How Avenur Works -->
+    <section class="section-block" style="background:#FFFFFF; border-top:1px solid #E2E8F0; border-bottom:1px solid #E2E8F0; padding: 4rem 0;">
+      <div class="container">
+        <h2 class="section-title">How Avenur works</h2>
+        <p class="section-subtitle">Direct, friction-free leasing built on digital trust</p>
+
+        <div class="how-it-works-grid" style="margin-top: 2rem;">
+          <div class="step-card">
+            <span class="step-number">1</span>
+            <div class="step-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <h3 class="step-title">Search & compare</h3>
+            <p class="step-desc">Filter by location, budget, and amenities. Every listing displays watermarked, authentic photos and confirmed deposit terms.</p>
+          </div>
+
+          <div class="step-card">
+            <span class="step-number">2</span>
+            <div class="step-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+            </div>
+            <h3 class="step-title">Unlock landlord contact</h3>
+            <p class="step-desc">Create your free tenant pass in seconds. Instantly unlock the exact building address, caretaker schedule, and direct phone/WhatsApp hotline.</p>
+          </div>
+
+          <div class="step-card">
+            <span class="step-number">3</span>
+            <div class="step-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </div>
+            <h3 class="step-title">Call, tour & sign</h3>
+            <p class="step-desc">Schedule an in-person viewing directly or chat on WhatsApp. Inspect the exact unit and sign directly with the building management.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Verified Tenant Reviews -->
+    <section class="container section-block">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">What verified tenants say</h2>
+          <p class="section-subtitle">Rated 9.4 "Superb" across 2,400+ verified East African tenancies</p>
+        </div>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="test-card">
+          <div class="test-card-head">
+            <div>
+              <p class="test-author">Wanjiru K.</p>
+              <p class="test-role">Westlands Tenant · 2BR Silverstone</p>
+            </div>
+            <span class="score-badge">10.0</span>
+          </div>
+          <p class="test-quote">"Called the caretaker straight from the listing and viewed the same afternoon. Everything matched the photos. Signed the lease within the week with zero broker fees."</p>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-head">
+            <div>
+              <p class="test-author">David M.</p>
+              <p class="test-role">Kilimani Tenant · 3BR Heights</p>
+            </div>
+            <span class="score-badge">9.6</span>
+          </div>
+          <p class="test-quote">"Having the deposit amount stated openly upfront saved me weeks of back-and-forth. The landlord was responsive on WhatsApp and provided water test certificates."</p>
+        </div>
+
+        <div class="test-card">
+          <div class="test-card-head">
+            <div>
+              <p class="test-author">Amina S.</p>
+              <p class="test-role">Verified Property Owner · Karen Suites</p>
+            </div>
+            <span class="score-badge">10.0</span>
+          </div>
+          <p class="test-quote">"As a landlord, the tenant verification filter means inquiries are from serious, pre-screened tenants. I filled two vacant wings in under ten days."</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Landlord CTA Banner -->
+    <section class="container">
+      <div class="landlord-cta-banner">
+        <div>
+          <h2 class="cta-banner-title">Own a rental property in Kenya? Reach serious tenants.</h2>
+          <p class="cta-banner-desc">Free to list. Only verified tenants see your contact, eliminating spam and ghost brokers. Every inquiry is a qualified lead.</p>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="navigateTo('landlord')">
+          <span>Open Landlord Portal</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"></path></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==============================================================
+       VIEW 2: SEARCH / CATALOG VIEW (CORE APP)
+  ============================================================== -->
+  <main id="view-catalog" class="view-screen">
+    <div class="container catalog-layout">
+      <!-- Filter Sidebar -->
+      <aside class="filter-sidebar">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+          <h3 style="font-size:1.1rem; font-weight:800; color:#0F172A;">Filters</h3>
+          <button class="btn btn-outline btn-sm" onclick="resetFilters()">Reset</button>
+        </div>
+
+        <!-- Location Search -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-area-input">Location or Area</label>
+          <input id="filter-area-input" type="text" placeholder="e.g. Westlands, Kilimani..." class="form-input">
+        </div>
+
+        <!-- Property Types Chips -->
+        <div class="filter-group">
+          <label class="filter-label">Property Type</label>
+          <div class="filter-chip-group">
+            <button type="button" class="filter-chip" data-type="bedsitter">Bedsitter</button>
+            <button type="button" class="filter-chip" data-type="studio">Studio</button>
+            <button type="button" class="filter-chip" data-type="1bed">1 Bed</button>
+            <button type="button" class="filter-chip" data-type="2bed">2 Bed</button>
+            <button type="button" class="filter-chip" data-type="3bed">3 Bed</button>
+            <button type="button" class="filter-chip" data-type="4bed">4+ Bed</button>
+            <button type="button" class="filter-chip" data-type="bnb">Short stay</button>
+          </div>
+        </div>
+
+        <!-- Price Range Slider -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <span>Max Rent</span>
+            <span id="filter-price-val" class="filter-range-val">Up to KES 200,000</span>
+          </label>
+          <input id="filter-price-slider" type="range" min="10000" max="200000" step="5000" value="200000" class="filter-range-slider">
+        </div>
+
+        <!-- Bedroom Count Chips -->
+        <div class="filter-group">
+          <label class="filter-label">Minimum Bedrooms</label>
+          <div class="filter-chip-group">
+            <button type="button" class="filter-chip active" data-bed="any">Any</button>
+            <button type="button" class="filter-chip" data-bed="0">Studio</button>
+            <button type="button" class="filter-chip" data-bed="1">1+</button>
+            <button type="button" class="filter-chip" data-bed="2">2+</button>
+            <button type="button" class="filter-chip" data-bed="3">3+</button>
+          </div>
+        </div>
+
+        <!-- Boolean Switches -->
+        <div class="filter-group">
+          <label class="filter-label">Preferences</label>
+
+          <label class="filter-toggle-row">
+            <span style="font-size:0.875rem; font-weight:600; color:#334155;">Verified Only</span>
+            <span class="toggle-switch">
+              <input id="filter-toggle-verified" type="checkbox">
+              <span class="toggle-slider"></span>
+            </span>
+          </label>
+
+          <label class="filter-toggle-row">
+            <span style="font-size:0.875rem; font-weight:600; color:#334155;">Furnished</span>
+            <span class="toggle-switch">
+              <input id="filter-toggle-furnished" type="checkbox">
+              <span class="toggle-slider"></span>
+            </span>
+          </label>
+
+          <label class="filter-toggle-row">
+            <span style="font-size:0.875rem; font-weight:600; color:#334155;">Gated Estate</span>
+            <span class="toggle-switch">
+              <input id="filter-toggle-gated" type="checkbox">
+              <span class="toggle-slider"></span>
+            </span>
+          </label>
+        </div>
+      </aside>
+
+      <!-- Results Area -->
+      <section>
+        <div class="catalog-header-bar">
+          <div>
+            <h2 id="catalog-count" class="catalog-count-text">Loading verified homes…</h2>
+            <p style="font-size:0.8125rem; color:#64748B; margin-top:0.2rem;">All properties audited for verified title, real photos, and direct landlord numbers.</p>
+          </div>
+
+          <div class="catalog-view-switches">
+            <select id="catalog-sort-select" class="form-select" style="width: auto; padding: 0.45rem 0.85rem; font-weight: 600;">
+              <option value="rating">Top Rated (Default)</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+            </select>
+
+            <button id="btn-view-grid" class="icon-switch-btn active" title="Grid View">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </button>
+            <button id="btn-view-list" class="icon-switch-btn" title="List View">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Instant Alert Trigger Strip -->
+        <div style="background:linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border:1px solid #C7D2FE; border-radius:8px; padding:0.85rem 1.25rem; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <div style="background:#4F46E5; color:#FFFFFF; width:32px; height:32px; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </div>
+            <div style="font-size:0.85rem; color:#1E1B4B;">
+              <strong>Looking for a specific rental?</strong> Get instant WhatsApp & Telegram push alerts when a verified unit drops in your price range.
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAlertsModal(store.filters.area, store.filters.bedrooms, store.filters.maxPrice)" style="padding:0.4rem 0.85rem; font-size:0.8125rem;">
+            <span>🔔 Set Instant Alert</span>
+          </button>
+        </div>
+
+        <div id="catalog-results-grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ==============================================================
+       VIEW 3: ITEM DETAIL VIEW (FEATURE STATE)
+  ============================================================== -->
+  <main id="view-detail" class="view-screen">
+    <div class="container detail-layout">
+      <!-- Breadcrumbs -->
+      <nav class="detail-breadcrumbs">
+        <span onclick="navigateTo('home')" style="cursor:pointer; color:#4F46E5; font-weight:600;">Home</span>
+        <span>/</span>
+        <span onclick="navigateTo('catalog')" style="cursor:pointer; color:#4F46E5; font-weight:600;">Kenya Rentals</span>
+        <span>/</span>
+        <span id="detail-breadcrumb-loc">Nairobi</span>
+        <span>/</span>
+        <span id="detail-breadcrumb-title" style="color:#0F172A; font-weight:700;">Property Title</span>
+      </nav>
+
+      <!-- Gallery Grid -->
+      <div class="detail-gallery-grid">
+        <div style="position:relative; overflow:hidden;">
+          <img id="detail-main-img" src="" alt="Main photo" class="gallery-main-img" onclick="showToast('Click thumbnail to switch preview')">
+          <div class="watermark-stamp"><span class="watermark-text">AVENUR VERIFIED AUDIT</span></div>
+        </div>
+        <div id="detail-thumbs-col" class="gallery-thumbs-col"></div>
+      </div>
+
+      <!-- Main Detail & Sticky Booking Grid -->
+      <div class="detail-main-grid">
+        <!-- Left Detail Body -->
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
+            <span style="background:#ECFDF5; color:#059669; padding:0.25rem 0.65rem; border-radius:4px; font-size:0.8125rem; font-weight:800; display:inline-flex; align-items:center; gap:0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              VERIFIED PROPERTY & TITLE
+            </span>
+            <span style="background:#EEF2FF; color:#4F46E5; padding:0.25rem 0.65rem; border-radius:4px; font-size:0.8125rem; font-weight:700;">Zero Middlemen</span>
+          </div>
+
+          <h1 id="detail-title" style="font-size:2rem; font-weight:800; color:#0F172A; letter-spacing:-0.02em;">Property Title</h1>
+          <p id="detail-location" style="font-size:0.9375rem; color:#475569; margin-top:0.4rem; font-weight:600;">Location · Area</p>
+
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.85rem;">
+            <span id="detail-score" class="score-badge" style="font-size:0.9375rem; padding:0.2rem 0.6rem;">9.8</span>
+            <span style="font-weight:700; color:#0F172A; font-size:0.875rem;">Superb</span>
+            <span style="color:#64748B;">·</span>
+            <span id="detail-reviews" style="font-size:0.875rem; color:#64748B; font-weight:600;">42 reviews</span>
+          </div>
+
+          <!-- Specs Strip -->
+          <div id="detail-specs-strip" class="detail-specs-strip"></div>
+
+          <!-- Accordion 1: Description -->
+          <div class="accordion-item open">
+            <button class="accordion-header">
+              <span>Overview & Architectural Description</span>
+              <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="accordion-content">
+              <p id="detail-description" style="margin-bottom: 0.75rem;"></p>
+              <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; background:#F8FAFC; padding:1rem; border-radius:8px;">
+                <div><strong>Lease Term:</strong> 12 Months Renewable</div>
+                <div><strong>Water Supply:</strong> Nairobi City Council + Deep Borehole</div>
+                <div><strong>Electricity:</strong> Individual KPLC Prepaid Token Meter</div>
+                <div><strong>Security:</strong> 24hr Manned Barrier, Electric Fence & CCTV</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 2: Verified Amenities -->
+          <div class="accordion-item open">
+            <button class="accordion-header">
+              <span>Building Amenities & Utilities</span>
+              <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="accordion-content">
+              <div id="detail-amenities-list" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:0.5rem;"></div>
+            </div>
+          </div>
+
+          <!-- Accordion 3: Unit Mix Table -->
+          <div class="accordion-item open">
+            <button class="accordion-header">
+              <span>Available Unit Configurations & Mix</span>
+              <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="accordion-content">
+              <p style="font-size:0.8125rem; color:#64748B; margin-bottom:0.5rem;">Real-time vacancy tracked directly with building caretaker.</p>
+              <div id="detail-unit-mix"></div>
+            </div>
+          </div>
+
+          <!-- Accordion 4: Lease Terms & Deposit Policies -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>Transparent Lease Terms & Deposit Policies</span>
+              <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="accordion-content">
+              <ul style="padding-left:1.25rem; display:flex; flex-direction:column; gap:0.4rem;">
+                <li><strong>Security Deposit:</strong> Refundable 1 month rent deposit held in escrow.</li>
+                <li><strong>Utility Metering:</strong> Individual sub-metered water at standard local municipal tariff.</li>
+                <li><strong>Notice Period:</strong> 1 full calendar month written notice prior to vacate.</li>
+                <li><strong>Pets:</strong> Pets allowed with prior notification to caretaker.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Similar Nearby Homes -->
+          <div style="margin-top: 3rem;">
+            <h3 style="font-size:1.35rem; font-weight:800; color:#0F172A; margin-bottom:1.25rem;">Similar verified homes nearby</h3>
+            <div id="similar-homes-grid" class="property-cards-grid"></div>
+          </div>
+        </div>
+
+        <!-- Right Sticky Booking Card -->
+        <aside class="booking-card">
+          <div class="booking-price-line">
+            <div>
+              <span id="booking-price" style="font-size:1.75rem; font-weight:800; color:#0F172A;">KES 45,000</span>
+              <span id="booking-period" style="font-size:0.9375rem; color:#64748B; font-weight:600;">/ month</span>
+            </div>
+            <span style="background:#ECFDF5; color:#059669; font-size:0.75rem; font-weight:800; padding:0.25rem 0.5rem; border-radius:4px;">Direct Landlord</span>
+          </div>
+          <div id="booking-deposit" style="font-size:0.8125rem; color:#64748B; margin-top:0.25rem;">Deposit: KES 45,000</div>
+
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:1rem; margin-top:1.25rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <div style="width:36px; height:36px; border-radius:9999px; background:#EEF2FF; color:#4F46E5; display:grid; place-items:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+              </div>
+              <div>
+                <strong style="font-size:0.875rem; color:#0F172A;">Direct Landlord Access</strong>
+                <p style="font-size:0.75rem; color:#64748B;">No brokers, no ghost agents, no advance registration fees.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-actions">
+            <button id="btn-unlock-contact" class="btn btn-primary btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <span>Unlock Landlord Direct Number</span>
+            </button>
+
+            <button class="btn btn-outline btn-lg" onclick="openScheduleModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Schedule In-Person Viewing</span>
+            </button>
+
+            <button id="btn-save-detail" class="btn btn-outline btn-sm" style="margin-top:0.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+              <span>Save to Favorites</span>
+            </button>
+          </div>
+
+          <div style="margin-top:1.25rem; text-align:center;">
+            <button onclick="openReportModal()" style="background:none; border:none; font-size:0.75rem; color:#94A3B8; text-decoration:underline; cursor:pointer;">
+              Report misleading photos or bad contact
+            </button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==============================================================
+       VIEW 4: LANDLORD PORTAL / DASHBOARD VIEW
+  ============================================================== -->
+  <main id="view-landlord" class="view-screen">
+    <div class="container dashboard-layout">
+      <!-- Dashboard Top Header -->
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <span style="font-size:0.8125rem; font-weight:700; color:#4F46E5; text-transform:uppercase; letter-spacing:0.05em;">Landlord Management Portal</span>
+          <h1 style="font-size:1.85rem; font-weight:800; color:#0F172A; letter-spacing:-0.02em;">Property Asset Dashboard</h1>
+        </div>
+
+        <div style="display:flex; gap:0.75rem;">
+          <button class="btn btn-outline btn-sm" onclick="navigateTo('home')">Switch to Tenant View</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddListingModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>+ Add New Listing</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Metrics Grid -->
+      <div class="kpi-metrics-grid">
+        <div class="kpi-metric-card">
+          <p class="kpi-metric-label">Active Listed Units</p>
+          <p class="kpi-metric-val">17</p>
+          <p class="kpi-trend">↑ 100% Verified live</p>
+        </div>
+        <div class="kpi-metric-card">
+          <p class="kpi-metric-label">Tenant Inquiries</p>
+          <p class="kpi-metric-val">142</p>
+          <p class="kpi-trend">↑ 24 new this week</p>
+        </div>
+        <div class="kpi-metric-card">
+          <p class="kpi-metric-label">Direct Contacts Unlocked</p>
+          <p class="kpi-metric-val">48</p>
+          <p class="kpi-trend">All phone verified</p>
+        </div>
+        <div class="kpi-metric-card">
+          <p class="kpi-metric-label">Estimated Monthly Rent</p>
+          <p class="kpi-metric-val">KES 840K</p>
+          <p class="kpi-trend">96% occupancy rate</p>
+        </div>
+      </div>
+
+      <!-- Tabs Bar -->
+      <div class="dash-tabs-bar">
+        <button class="dash-tab-btn active">All Listed Properties</button>
+        <button class="dash-tab-btn" onclick="showToast('Viewing inquiries log')">Inquiries & Leads</button>
+        <button class="dash-tab-btn" onclick="showToast('Viewing scheduled calendar tours')">Scheduled Tours (8)</button>
+        <button class="dash-tab-btn" onclick="showToast('Escrow deposit settings')">Deposit Escrow</button>
+      </div>
+
+      <!-- Properties Table -->
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Property Details</th>
+              <th>Rent / mo</th>
+              <th>Verification Status</th>
+              <th>Total Views</th>
+              <th>Contact Unlocks</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="landlord-properties-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==============================================================
+       VIEW 5: PROGRAMMATIC SEO (pSEO) DYNAMIC LANDING VIEW
+  ============================================================== -->
+  <main id="view-pseo" class="view-screen">
+    <div class="container" style="padding-top:1.5rem; padding-bottom:4rem;">
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumb-nav" id="pseo-breadcrumb" style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:#64748B; margin-bottom:1.25rem;">
+        <a href="javascript:void(0)" onclick="navigateTo('home')">Home</a>
+        <span>/</span>
+        <a href="javascript:void(0)" onclick="navigateTo('catalog')">Rentals</a>
+        <span>/</span>
+        <span id="pseo-crumb-area" style="color:#0F172A; font-weight:600;">Kenya</span>
+        <span>/</span>
+        <span id="pseo-crumb-query" style="color:#4F46E5; font-weight:700;">Curated Search</span>
+      </nav>
+
+      <!-- Programmatic Hero Banner -->
+      <section class="pseo-hero-banner">
+        <div class="pseo-badge-row" id="pseo-badge-row">
+          <span class="pseo-badge-pill pseo-badge-emerald">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            100% Physical Field Audit
+          </span>
+          <span class="pseo-badge-pill pseo-badge-indigo">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+            Zero Ghost Listings Guarantee
+          </span>
+          <span class="pseo-badge-pill pseo-badge-emerald">
+            Zero Advance Viewing Fees
+          </span>
+        </div>
+        <h1 class="pseo-h1-title" id="pseo-h1">Verified Rental Properties</h1>
+        <p class="pseo-meta-desc" id="pseo-desc">
+          Browse verified residential listings matching your criteria with verified water, electricity tokens, and direct owner contacts.
+        </p>
+      </section>
+
+      <!-- Market Insights Summary Grid -->
+      <section style="margin-bottom:2.5rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.85rem;">
+          <h2 style="font-size:1.15rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:0.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span id="pseo-market-title">Neighborhood Rental Intelligence</span>
+          </h2>
+          <span style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Audited Live Data</span>
+        </div>
+        <div class="market-insights-grid" id="pseo-insights-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Results Grid Header -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h2 style="font-size:1.4rem; font-weight:800; color:#0F172A;" id="pseo-results-title">Verified Matching Units</h2>
+          <p style="font-size:0.875rem; color:#64748B; margin-top:0.2rem;" id="pseo-results-count">Authentic listings matching your exact search filters</p>
+        </div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn btn-sm" onclick="openAlertsModal(document.getElementById('pseo-crumb-area')?.textContent, '', '')" style="background:#10B981; border:1px solid #10B981; color:#FFFFFF; font-weight:700; display:inline-flex; align-items:center; gap:0.35rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span>Alert Me on WhatsApp</span>
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="navigateTo('catalog')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>View in Interactive Catalog</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Container -->
+      <div id="pseo-results-grid" class="properties-grid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Zero-Ghost / Concierge Fallback Container -->
+      <div id="pseo-concierge-fallback" style="display:none; margin-top:1.5rem;">
+        <!-- Injected dynamically if 0 listings match -->
+      </div>
+
+      <!-- Area Neighbourhood Guide & Tenant Advisory -->
+      <section style="margin-top:3.5rem; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+        <h3 style="font-size:1.2rem; font-weight:800; color:#0F172A; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;" id="pseo-guide-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>Local Area Advisory & Verification Report</span>
+        </h3>
+        <div id="pseo-guide-content" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.5rem; color:#475569; font-size:0.9rem; line-height:1.65;">
+          <!-- Dynamically populated advisory cards -->
+        </div>
+      </section>
+
+      <!-- Related High-Intent Programmatic Keyword Cloud -->
+      <div class="related-seo-box">
+        <h4 class="related-seo-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          <span>Popular Keyword Searches in this Location</span>
+        </h4>
+        <div class="related-pills-wrap" id="pseo-related-pills">
+          <!-- Dynamically populated keyword pills -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==============================================================
+       GLOBAL FOOTER
+  ============================================================== -->
+  <footer class="site-footer">
+    <div class="container footer-top">
+      <div>
+        <div class="brand-logo" onclick="navigateTo('home')">
+          <img src="assets/logo.jpeg" alt="Avenur Logo" style="height: 34px; width: 34px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+          <span>avenur</span>
+        </div>
+        <p style="font-size:0.875rem; color:#94A3B8; margin-top:0.85rem; max-width:320px; line-height:1.5;">
+          Kenya's verified residential rental marketplace. Real listings, authentic watermarked photography, verified landlords.
+        </p>
+        <p style="font-size:0.8125rem; color:#64748B; margin-top:0.75rem;">+254 798 792 730 · hello@avenur.co.ke · WhatsApp: 0798792730</p>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">Explore Hub</h4>
+        <ul class="footer-links-list">
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="store.filters.area='Nairobi'; navigateTo('catalog');">Nairobi Rentals</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="store.filters.area='Mombasa'; navigateTo('catalog');">Mombasa Rentals</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="store.filters.area='Kisumu'; navigateTo('catalog');">Kisumu Rentals</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="store.filters.type='bnb'; navigateTo('catalog');">Short Stays & BnBs</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="store.filters.gatedOnly=true; navigateTo('catalog');">Gated Estates</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">For Owners</h4>
+        <ul class="footer-links-list">
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="openAddListingModal()">List Your Property</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="navigateTo('landlord')">Landlord Portal</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="showToast('Zero commission on verified direct tenancies')">Pricing & Free Tier</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="showToast('Physical photography audit service')">Book Free Photo Verification</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">Trust & Safety</h4>
+        <ul class="footer-links-list">
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="showToast('Physical audit standards')">Verification Guidelines</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="openReportModal()">Report a Bad Listing</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="showToast('Terms of Service')">Terms of Service</a></li>
+          <li class="footer-link-item"><a href="javascript:void(0)" onclick="showToast('Privacy Policy')">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Programmatic SEO (pSEO) Internal Linking Cluster -->
+    <div class="container" style="border-top:1px solid #1E293B; padding-top:2rem; padding-bottom:1.5rem; margin-top:2rem;">
+      <div style="margin-bottom:0.85rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+        <span style="font-size:0.75rem; font-weight:800; color:#818CF8; text-transform:uppercase; letter-spacing:0.06em;">
+          Programmatic SEO Index · High-Demand Rental Keywords
+        </span>
+        <span style="font-size:0.75rem; color:#64748B;">Auto-Generated Dynamic Landing Pages</span>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:0.6rem;">
+        <a href="#/rentals/bedsitters-in-ruaka-under-15k" class="footer-seo-tag" onclick="navigateToPseo('bedsitters-in-ruaka-under-15k')">Bedsitters in Ruaka under 15k</a>
+        <a href="#/rentals/2-bedroom-apartments-in-kilimani-with-borehole" class="footer-seo-tag" onclick="navigateToPseo('2-bedroom-apartments-in-kilimani-with-borehole')">2 bedroom apartments in Kilimani with borehole</a>
+        <a href="#/rentals/furnished-apartments-in-westlands-for-short-stay" class="footer-seo-tag" onclick="navigateToPseo('furnished-apartments-in-westlands-for-short-stay')">Furnished apartments in Westlands for short stay</a>
+        <a href="#/rentals/1-bedroom-apartments-in-syokimau-under-25k" class="footer-seo-tag" onclick="navigateToPseo('1-bedroom-apartments-in-syokimau-under-25k')">1 bedroom apartments in Syokimau under 25k</a>
+        <a href="#/rentals/lavington-4br-townhouse-with-garden" class="footer-seo-tag" onclick="navigateToPseo('lavington-4br-townhouse-with-garden')">Lavington 4BR townhouse with garden</a>
+        <a href="#/rentals/karen-2-bedroom-country-suite-furnished" class="footer-seo-tag" onclick="navigateToPseo('karen-2-bedroom-country-suite-furnished')">Karen 2 bedroom country suite furnished</a>
+        <a href="#/rentals/nyali-ocean-view-villas-short-stay" class="footer-seo-tag" onclick="navigateToPseo('nyali-ocean-view-villas-short-stay')">Nyali ocean view villas short stay</a>
+        <a href="#/rentals/affordable-bedsitters-in-nairobi-cbd-under-12k" class="footer-seo-tag" onclick="navigateToPseo('affordable-bedsitters-in-nairobi-cbd-under-12k')">Bedsitters in Nairobi CBD under 15k</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <span>© 2026 Avenur Ltd. Built with Deep Indigo & 8px Precision Design Standard.</span>
+      <div style="display:flex; gap:1.25rem;">
+        <a href="javascript:void(0)" onclick="showToast('Privacy')">Privacy</a>
+        <a href="javascript:void(0)" onclick="showToast('Terms')">Terms</a>
+        <a href="javascript:void(0)" onclick="showToast('Cookies')">Cookies</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==============================================================
+       MOBILE BOTTOM TAB BAR
+  ============================================================== -->
+  <nav class="mobile-tab-bar">
+    <ul class="mobile-tabs-grid">
+      <li>
+        <button class="mobile-tab-btn active" data-view="home" onclick="navigateTo('home')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          <span>Home</span>
+        </button>
+      </li>
+      <li>
+        <button class="mobile-tab-btn" data-view="catalog" onclick="navigateTo('catalog')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Search</span>
+        </button>
+      </li>
+      <li>
+        <button class="mobile-tab-btn" onclick="openDrawer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+          <span>Saved</span>
+        </button>
+      </li>
+      <li>
+        <button class="mobile-tab-btn" data-view="landlord" onclick="navigateTo('landlord')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          <span>Owners</span>
+        </button>
+      </li>
+      <li>
+        <button class="mobile-tab-btn" onclick="openAuthModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>
+          <span>Account</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- ==============================================================
+       FLYOUT DRAWER: SAVED FAVORITES
+  ============================================================== -->
+  <div id="saved-drawer-overlay" class="drawer-overlay">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h3 style="font-size:1.15rem; font-weight:800; color:#0F172A;">Saved Properties</h3>
+        <button class="modal-close-btn" onclick="closeDrawer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div id="saved-drawer-content" class="drawer-content"></div>
+      <div style="padding:1.25rem; border-top:1px solid #E2E8F0; background:#F8FAFC;">
+        <button class="btn btn-primary" style="width:100%;" onclick="closeDrawer(); navigateTo('catalog');">Browse More Rentals</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 1: MULTI-STEP LANDLORD CONTACT UNLOCK
+  ============================================================== -->
+  <div id="modal-contact-unlock" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Verified Landlord Direct Access</h3>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Step 1: Pre-unlock confirmation -->
+      <div id="contact-step-1" class="modal-body">
+        <div style="text-align:center; padding:1rem 0;">
+          <div style="width:52px; height:52px; border-radius:9999px; background:#EEF2FF; color:#4F46E5; display:grid; place-items:center; margin:0 auto 1rem auto;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 12 15 17 9"></polyline></svg>
+          </div>
+          <h4 style="font-size:1.2rem; font-weight:800; color:#0F172A;">Instant Landlord Direct Contact</h4>
+          <p style="font-size:0.875rem; color:#64748B; margin-top:0.4rem; max-width:380px; margin-left:auto; margin-right:auto;">
+            By unlocking, you bypass all middleman fees. You will receive the caretaker's mobile number and direct WhatsApp hotline.
+          </p>
+        </div>
+
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:1rem; margin-top:1rem;">
+          <label class="form-label" for="tenant-mobile-confirm">Your Phone Number (For Landlord Callback)</label>
+          <input id="tenant-mobile-confirm" type="text" class="form-input" value="+254 712 345 678" readonly>
+          <p style="font-size:0.75rem; color:#64748B; margin-top:0.35rem;">Signed in as Sarah K. (Verified Tenant)</p>
+        </div>
+
+        <div class="modal-footer" style="margin-top:1.5rem; padding:1rem 0 0 0; background:none;">
+          <button class="btn btn-outline modal-close-trigger">Cancel</button>
+          <button id="btn-confirm-unlock" class="btn btn-primary">
+            <span>Unlock Direct Contact</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Unlocked details -->
+      <div id="contact-step-2" class="modal-body" style="display:none;">
+        <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:0.75rem 1rem; display:flex; align-items:center; gap:0.6rem; color:#065F46; font-size:0.875rem; font-weight:700;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Verified Landlord Contact Unlocked!</span>
+        </div>
+
+        <div style="margin-top:1.25rem;">
+          <div style="font-size:0.8125rem; color:#64748B; font-weight:600;">Property Owner / Manager</div>
+          <div id="landlord-display-name" style="font-size:1.1rem; font-weight:800; color:#0F172A; margin-top:0.2rem;">Marcus Mwangi</div>
+          <div style="font-size:0.8125rem; color:#059669; font-weight:700; margin-top:0.15rem;">✓ Title Ownership Confirmed by Avenur Audit</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-top:1.25rem;">
+          <a id="landlord-whatsapp-link" href="#" target="_blank" class="btn btn-primary" style="background:#059669; border-color:#059669;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            <span>WhatsApp Chat</span>
+          </a>
+
+          <a id="landlord-display-phone" href="#" class="btn btn-outline" style="font-weight:700; color:#0F172A;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span>Call Direct</span>
+          </a>
+        </div>
+
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:0.85rem; margin-top:1.25rem;">
+          <div style="font-size:0.75rem; color:#64748B;"><strong>On-Site Caretaker:</strong> <span id="landlord-display-caretaker">John (Available 8am - 6pm)</span></div>
+          <div style="font-size:0.75rem; color:#64748B; margin-top:0.25rem;"><strong>Viewing Advice:</strong> Mention you found the listing on Avenur for priority building access.</div>
+        </div>
+
+        <div class="modal-footer" style="margin-top:1.5rem; padding:1rem 0 0 0; background:none;">
+          <button class="btn btn-outline modal-close-trigger" style="width:100%;">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 2: SCHEDULE IN-PERSON VIEWING
+  ============================================================== -->
+  <div id="modal-schedule-tour" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Schedule In-Person Viewing</h3>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-schedule-tour">
+        <div class="modal-body">
+          <p style="font-size:0.875rem; color:#64748B; margin-bottom:1.25rem;">
+            Select a preferred date and time slot. The building caretaker will meet you at the property gate.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="tour-date">Preferred Viewing Date</label>
+            <input id="tour-date" type="date" class="form-input" required value="2026-11-02">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Time Window</label>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.5rem;">
+              <label style="border:1px solid #E2E8F0; padding:0.6rem; border-radius:8px; text-align:center; font-size:0.8125rem; font-weight:600; cursor:pointer;">
+                <input type="radio" name="tour-time" value="morning" checked> Morning (10am)
+              </label>
+              <label style="border:1px solid #E2E8F0; padding:0.6rem; border-radius:8px; text-align:center; font-size:0.8125rem; font-weight:600; cursor:pointer;">
+                <input type="radio" name="tour-time" value="afternoon"> Afternoon (2pm)
+              </label>
+              <label style="border:1px solid #E2E8F0; padding:0.6rem; border-radius:8px; text-align:center; font-size:0.8125rem; font-weight:600; cursor:pointer;">
+                <input type="radio" name="tour-time" value="evening"> Evening (5pm)
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tour-notes">Notes or Questions for Caretaker</label>
+            <textarea id="tour-notes" rows="2" class="form-textarea" placeholder="e.g. Checking water pressure, balcony views, or parking space..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline modal-close-trigger">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 3: REPORT BAD LISTING
+  ============================================================== -->
+  <div id="modal-report-listing" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Report Listing Discrepancy</h3>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-report-listing">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="report-reason">What seems wrong with this listing?</label>
+            <select id="report-reason" class="form-select" required>
+              <option value="unreachable">Landlord / Caretaker phone is unreachable</option>
+              <option value="photos_mismatch">Photos do not match physical building</option>
+              <option value="price_discrepancy">Quoted rent is different from in-person quote</option>
+              <option value="already_let">Property has already been let out</option>
+              <option value="broker_fee">Someone demanded viewing or registration fees</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="report-details">Additional details</label>
+            <textarea id="report-details" rows="3" class="form-textarea" placeholder="Describe what occurred. We inspect reports within 24 hours." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline modal-close-trigger">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:#DC2626; border-color:#DC2626;">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 4: ADD NEW LISTING (LANDLORD CREATOR)
+  ============================================================== -->
+  <div id="modal-add-listing" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Publish New Verified Rental Listing</h3>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-add-listing">
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+          <div class="form-group">
+            <label class="form-label" for="new-prop-title">Listing Headline</label>
+            <input id="new-prop-title" type="text" class="form-input" placeholder="e.g. Westlands Vista Modern 2BR" required>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="new-prop-area">Neighbourhood / Area</label>
+              <input id="new-prop-area" type="text" class="form-input" placeholder="e.g. Kilimani, Ruaka" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-prop-city">City / County</label>
+              <input id="new-prop-city" type="text" class="form-input" value="Nairobi" required>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="new-prop-price">Monthly Rent (KES)</label>
+              <input id="new-prop-price" type="number" class="form-input" placeholder="e.g. 45000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-prop-beds">Bedrooms</label>
+              <select id="new-prop-beds" class="form-select">
+                <option value="0">Studio / Bedsitter</option>
+                <option value="1">1 Bedroom</option>
+                <option value="2" selected>2 Bedrooms</option>
+                <option value="3">3 Bedrooms</option>
+                <option value="4">4+ Bedrooms</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="new-prop-baths">Bathrooms</label>
+            <input id="new-prop-baths" type="number" class="form-input" value="2" min="1" max="5">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="new-prop-desc">Full Property Overview</label>
+            <textarea id="new-prop-desc" rows="3" class="form-textarea" placeholder="Detail the layout, security, water supply, and finishes..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline modal-close-trigger">Cancel</button>
+          <button type="submit" class="btn btn-primary">Publish to Live Catalog</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 5: AUTH & QUICK LOGIN
+  ============================================================== -->
+  <div id="modal-auth" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Sign in to Avenur</h3>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display:flex; border-bottom:1px solid #E2E8F0; margin-bottom:1.25rem;">
+          <button class="auth-tab-btn active" style="flex:1; padding:0.6rem; border:none; background:none; font-weight:700; color:#4F46E5; border-bottom:2px solid #4F46E5; cursor:pointer;">Tenant Pass</button>
+          <button class="auth-tab-btn" style="flex:1; padding:0.6rem; border:none; background:none; font-weight:700; color:#64748B; cursor:pointer;">Landlord Login</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="auth-phone">Mobile Phone (M-Pesa or SMS)</label>
+          <input id="auth-phone" type="tel" class="form-input" value="+254 712 345 678">
+        </div>
+
+        <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="closeAllModals(); showToast('Signed in successfully as Sarah K.');">
+          Continue with One-Time Passcode
+        </button>
+
+        <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid #E2E8F0; text-align:center;">
+          <p style="font-size:0.75rem; color:#64748B;">Instant Prototype Demo Shortcuts:</p>
+          <div style="display:flex; gap:0.5rem; justify-content:center; margin-top:0.5rem;">
+            <button class="btn btn-outline btn-sm" onclick="closeAllModals(); showToast('Signed in as Demo Tenant');">Demo Tenant</button>
+            <button class="btn btn-outline btn-sm" onclick="closeAllModals(); navigateTo('landlord'); showToast('Signed in as Demo Landlord');">Demo Landlord</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 6: CONCIERGE MATCH REQUEST (FOR UNLISTED AREAS / DAY-0)
+  ============================================================== -->
+  <div id="modal-concierge-match" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Request a Free Verified Match</h3>
+          <p style="font-size:0.8125rem; color:#64748B; margin-top:0.15rem;">Zero ghost listings. We physically audit homes on demand.</p>
+        </div>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-concierge-match">
+        <div class="modal-body">
+          <div style="background:#EEF2FF; border:1px solid #C7D2FE; border-radius:8px; padding:0.85rem 1rem; margin-bottom:1rem; display:flex; gap:0.75rem;">
+            <div style="color:#4F46E5; flex-shrink:0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 12 15 17 9"></polyline></svg>
+            </div>
+            <div style="font-size:0.8125rem; color:#1E1B4B; line-height:1.45;">
+              <strong>Our 48-Hour Field Guarantee:</strong> We do not display fake units. Tell us your target area and budget; our audit team will visit the neighbourhood, inspect title ownership & water supply, and send you 2 verified options.
+            </div>
+          </div>
+
+          <!-- Concierge Find It For Me Sourcing Fee Structure -->
+          <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:0.85rem 1rem; margin-bottom:1.25rem; display:flex; gap:0.75rem;">
+            <div style="color:#059669; flex-shrink:0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
+            </div>
+            <div style="font-size:0.8125rem; color:#064E3B; line-height:1.45;">
+              <strong>Concierge "Find It For Me" Transparent Fee:</strong><br>
+              • <strong>KES 0 Advance Viewing Fee:</strong> You never pay a single cent to request or tour verified units.<br>
+              • <strong>Success Placement Fee (Flat KES 3,000):</strong> Only payable <em>after</em> you inspect the house in person, approve it, and successfully sign the lease with the landlord!
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="concierge-name">Your Full Name</label>
+              <input id="concierge-name" type="text" class="form-input" placeholder="e.g. Kelvin Mutiso" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="concierge-phone">WhatsApp / Phone</label>
+              <input id="concierge-phone" type="tel" class="form-input" placeholder="e.g. +254 700 000 000" required>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="concierge-area">Target Area / Neighbourhood</label>
+              <input id="concierge-area" type="text" class="form-input" placeholder="e.g. Karen, Kilimani, Ruaka" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="concierge-budget">Target Monthly Budget (KES)</label>
+              <input id="concierge-budget" type="number" class="form-input" placeholder="e.g. 50000" required>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="concierge-beds">Ideal Layout</label>
+              <select id="concierge-beds" class="form-select">
+                <option value="bedsitter">Bedsitter</option>
+                <option value="studio">Studio</option>
+                <option value="1bed">1 Bedroom</option>
+                <option value="2bed" selected>2 Bedrooms</option>
+                <option value="3bed">3 Bedrooms</option>
+                <option value="4bed">4+ Bedrooms</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="concierge-date">Target Move-In Date</label>
+              <input id="concierge-date" type="date" class="form-input" value="2026-11-15">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline modal-close-trigger">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:#059669; border-color:#059669;">
+            <span>Submit Request (KES 3,000 Fee Only Upon Lease Signing)</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 7: LANDLORD FREE PHOTO & AUDIT BOOKING
+  ============================================================== -->
+  <div id="modal-photo-audit" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Book Free Photo Verification Audit</h3>
+          <p style="font-size:0.8125rem; color:#64748B; margin-top:0.15rem;">We send a photographer & verification specialist at no cost.</p>
+        </div>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-photo-audit">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="audit-building-name">Building / Estate Name</label>
+            <input id="audit-building-name" type="text" class="form-input" placeholder="e.g. Silverstone Heights" required>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="audit-area">Location / Street</label>
+              <input id="audit-area" type="text" class="form-input" placeholder="e.g. Argwings Kodhek, Kilimani" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="audit-vacancies">Number of Vacant Units</label>
+              <input id="audit-vacancies" type="number" class="form-input" placeholder="e.g. 3" min="1" required>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="audit-contact-name">Owner / Caretaker Name</label>
+              <input id="audit-contact-name" type="text" class="form-input" placeholder="e.g. Caretaker Dennis" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="audit-contact-phone">Phone Number</label>
+              <input id="audit-contact-phone" type="tel" class="form-input" placeholder="e.g. +254 798 792 730" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="audit-preferred-date">Preferred Audit Day</label>
+            <input id="audit-preferred-date" type="date" class="form-input" value="2026-11-03">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline modal-close-trigger">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:#059669; border-color:#059669;">Book Free Field Audit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       MODAL 8: INSTANT RENTAL ALERTS (WHATSAPP & TELEGRAM)
+  ============================================================== -->
+  <div id="modal-alerts" class="modal-overlay">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" style="display:flex; align-items:center; gap:0.5rem;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span>Instant Rental Listing Alerts</span>
+          </h3>
+          <p style="font-size:0.8125rem; color:#64748B; margin-top:0.2rem;">Never miss a verified rental. Good deals in Nairobi go within 48 hours.</p>
+        </div>
+        <button class="modal-close-btn modal-close-trigger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Option 1: Official WhatsApp Channel -->
+        <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:1.15rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:flex-start; gap:0.75rem; max-width:360px;">
+            <div style="background:#22C55E; color:#FFFFFF; width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            </div>
+            <div>
+              <div style="font-weight:800; font-size:0.95rem; color:#14532D;">WhatsApp Broadcast Channel</div>
+              <p style="font-size:0.8rem; color:#166534; margin:0.15rem 0 0 0; line-height:1.4;">Daily drops of every newly verified house. 100% private, free forever.</p>
+            </div>
+          </div>
+          <a href="https://whatsapp.com/channel/0029VbDw7Xv6mYPT4pPeZK02" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="background:#16A34A; border-color:#16A34A; padding:0.5rem 0.95rem; font-weight:700;">
+            <span>Join WhatsApp Channel ↗</span>
+          </a>
+        </div>
+
+        <!-- Option 2: Telegram Automated Bot Channel -->
+        <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:1.15rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:flex-start; gap:0.75rem; max-width:360px;">
+            <div style="background:#2563EB; color:#FFFFFF; width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </div>
+            <div>
+              <div style="font-weight:800; font-size:0.95rem; color:#1E3A8A;">@avenurliving Telegram Channel</div>
+              <p style="font-size:0.8rem; color:#1D4ED8; margin:0.15rem 0 0 0; line-height:1.4;">Instant push alerts automated by our bot the second a house is verified.</p>
+            </div>
+          </div>
+          <a href="https://t.me/avenurliving" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="background:#2563EB; border-color:#2563EB; padding:0.5rem 0.95rem; font-weight:700;">
+            <span>Join Telegram ↗</span>
+          </a>
+        </div>
+
+        <!-- Option 3: Direct 1-on-1 WhatsApp Alert to User's Specific Search -->
+        <div style="border-top:1px solid #E2E8F0; padding-top:1.25rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.85rem;">
+            <span style="font-size:0.8125rem; font-weight:800; color:#0F172A; text-transform:uppercase; letter-spacing:0.04em;">
+              Or Get a Tailored 1-on-1 WhatsApp Alert
+            </span>
+            <span style="font-size:0.75rem; color:#059669; font-weight:700; background:#ECFDF5; padding:0.15rem 0.5rem; border-radius:4px;">Direct to Your Phone</span>
+          </div>
+
+          <form id="form-tailored-alert">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="alert-area">Target Area</label>
+                <input id="alert-area" type="text" class="form-input" placeholder="e.g. Kilimani, Ruaka" value="Kilimani" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="alert-beds">Preferred Layout</label>
+                <select id="alert-beds" class="form-select">
+                  <option value="Bedsitter">Bedsitter</option>
+                  <option value="Studio">Studio</option>
+                  <option value="1 Bedroom">1 Bedroom</option>
+                  <option value="2 Bedrooms" selected>2 Bedrooms</option>
+                  <option value="3 Bedrooms">3 Bedrooms</option>
+                  <option value="Townhouse / 4BR">Townhouse / 4BR</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="alert-budget">Max Monthly Budget (KES)</label>
+              <input id="alert-budget" type="number" class="form-input" placeholder="e.g. 45000" value="45000" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; background:#10B981; border-color:#10B981; margin-top:0.5rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              <span>Activate Direct 1-on-1 WhatsApp Alert</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       PROTOTYPE HOTSPOT CONTROLLER (HUD)
+  ============================================================== -->
+  <div class="prototype-hud">
+    <div class="hud-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+      <span>Flow HUD:</span>
+    </div>
+    <button class="hud-pill active" data-view="home">1. Home</button>
+    <button class="hud-pill" data-view="catalog">2. Catalog</button>
+    <button class="hud-pill" data-view="detail">3. Detail</button>
+    <button class="hud-pill" data-view="landlord">4. Landlord</button>
+    <button class="hud-pill" data-view="pseo" onclick="navigateToPseo('bedsitters-in-ruaka-under-15k')">5. pSEO Landing</button>
+    <button class="hud-pill" onclick="openAlertsModal()">Alerts</button>
+    <button class="hud-pill" onclick="openDrawer()">Saved</button>
+    <button class="hud-pill" onclick="openContactModal(store.getCurrentListing())">Contact</button>
+    <button class="hud-pill" onclick="openScheduleModal()">Tour</button>
+    <button id="hud-toggle-mode" class="hud-mode-pill" onclick="store.toggleLaunchMode()" title="Toggle between Pilot Seed inventory and Day-0 Zero Inventory">Mode: Seed Inventory</button>
+  </div>
+
+  <!-- Toast Center -->
+  <div id="toast-center" class="toast-center"></div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
